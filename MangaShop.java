@@ -1,213 +1,271 @@
-
-// Importing statements
+package mangashop;
 
 import java.util.Scanner;
-
-// Exception Importing Statements
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.InputMismatchException;
+import java.util.LinkedList;
 
-// ** ============================================================ ** //
-// ** Start : Registration. ** //
-//** ============================================================ ** //
-
-// ** Abstraction : WelcomePage Interface.
-interface WelcomePage {
-	// Abstract Methods
-	void login();
-
-	void signup();
-}
-
-// ** Inheritance : Registration Class is Inheriting WelcomePage Interface.
-class Registration implements WelcomePage {
-
-	// ** Encapsulation : Data Hiding
+//============================================================//
+//============================================================//
+// this all is user creation and login and signup related stuff.
+class User {
 	private String name;
-	private long contact = 1234567890L;
+	private long contact;
 	private String email;
-	private String address;
-	private String password = "admin";
+	private String password;
 
-	// ** Encapsulation : Getter and Setter Methods.
-	public String getName() {
-		return name;
+	public User(String name, long contact, String email, String password) {
+		this.name = name;
+		this.contact = contact;
+		this.email = email;
+		this.password = password;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public String getName() {
+		return name;
 	}
 
 	public long getContact() {
 		return contact;
 	}
 
-	// ** Exception Propogation : throws InputMismatchException.
-	public void setContact() {
-
-		Scanner input = new Scanner(System.in);
-
-		try {
-			System.out.print("  >> Enter contact no : ");
-			this.contact = input.nextLong();
-
-			if (!(this.contact > 999999999L) && !(this.contact < 100000000000L)) {
-				System.out.println("  !! Please enter 10 digits");
-
-				// Method Recursion : Recursive Calling Statement.
-				setContact();
-			}
-		} catch (InputMismatchException ie) {
-			System.out.println("  !! Enter Number Only.");
-
-			// Method Recursion : Recursive Calling Statement.
-			setContact();
-		}
-
-	}
-
 	public String getEmail() {
 		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
 	}
 
 	public String getPassword() {
 		return password;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+}
 
-	public String getAddress() {
-		return address;
-	}
+interface Authentication {
+	void login(ArrayList<User> userCollection, Scanner scr) throws InvalidCredintialException;
 
-	public void setAddress(String address) {
-		this.address = address;
-	}
+	void signup(ArrayList<User> userCollection, Scanner scr) throws InvalidCredintialException;
+}
 
-	// ** Polymorphism :
-	// ** Runtime Polymorphism : Method Overriding.
-	public void login() {
+class AuthProcess implements Authentication {
+	LinkedList<Manga> mangaCollection;
 
-		System.out.println();
+	public void login(ArrayList<User> userCollection, Scanner scr) throws InvalidCredintialException {
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println("| <<                       Login Process                          >> |");
 		System.out.println("| ** ============================================================ ** |");
 
-		Scanner input = new Scanner(System.in);
+		long contact = userContact(scr);
 
-		// ** Exception Handling Mechanism : try catch.
+		System.out.print("  >> Enter password : ");
+		String password = scr.next();
+
 		try {
-			System.out.print("  >> Enter contact No. : ");
-			long contact = input.nextLong();
-			input.nextLine();
-
-			System.out.print("  >> Enter password : ");
-			String password = input.nextLine();
-
-			if (this.contact == contact && this.password.equals(password)) {
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("| <<                    Logged In Successfully                    >> |");
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println();
-				System.out.println("                                *****                                 ");
-			} else {
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("| <<              Invalid Credential Please Try Again             >> |");
-				System.out.println();
-				System.out.println("                                *****                                 ");
-				login();
+			for (User user : userCollection) {
+				if (user.getContact() == contact && user.getPassword().equals(password)) {
+					System.out.println("| ** ============================================================ ** |");
+					System.out.println("| <<                    Logged In Successfully                    >> |");
+					System.out.println("| ** ============================================================ ** |");
+					HomePage menu = new HomePage();
+					menu.menu(userCollection, mangaCollection, scr);
+				} else {
+					throw new InvalidCredintialException("Invalid Credintial.");
+				}
 			}
-		} catch (InputMismatchException ie) {
-			System.out.println("| <<               Invalid Input Please Try Again                >> |");
-			// Method Recursion : Recursive Calling Statement.
-			login();
+		} catch (InvalidCredintialException e) {
+			System.out.println("  !! " + e);
+		} catch (Exception e) {
+			System.out.println("  !! User is not exits");
 		}
 
+		login(userCollection, scr);
 	}
 
-	// ** Runtime Polymorphism : Method Overriding.
-	public void signup() {
-
+	public void signup(ArrayList<User> userCollection, Scanner scr) throws InvalidCredintialException {
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println("| <<                       Signup Process                         >> |");
 		System.out.println("| ** ============================================================ ** |");
 
-		Scanner input = new Scanner(System.in);
+		String name = userName(scr);
 
-		// ** Exception Handling Mechanism : try cath with finally.
-		try {
-			System.out.print("  >> Enter your name : ");
-			String name = input.nextLine();
-			setName(name);
+		long contact = userContact(scr);
 
-			// Method Calling Statement
-			setContact();
+		String email = userEmail(scr);
 
-			System.out.print("  >> Enter your email : ");
-			String email = input.nextLine();
-			setEmail(email);
+		String password = userPassword(scr);
 
-			System.out.print("  >> Enter your address : ");
-			String address = input.nextLine();
-			setAddress(address);
+		User user = new User(name, contact, email, password);
 
-			System.out.print("  >> Enter your password : ");
-			String password = input.nextLine();
-			setPassword(password);
+		userCollection.add(user);
 
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       Signup Successfully                    >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
-			System.out.println("                                *****                                 ");
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("| <<                       Signup Successfully                    >> |");
+		System.out.println("| ** ============================================================ ** |");
 
-			// Method Calling Statement
-			login();
-		} catch (Exception e) {
-			System.out.println("  !! Invalid input. ");
+		login(userCollection, scr);
+	}
 
-			// Method Recursion : Recursive Calling Statement.
-			signup();
+	private String userName(Scanner scr) {
+		System.out.print("  >> Enter your name : ");
+		String name = scr.next();
+
+		if (name.isBlank()) {
+			userName(scr);
 		}
 
+		if (!(name.length() >= 3)) {
+			System.out.println("  !! UserName must be three characters.");
+			userName(scr);
+		} else if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
+			System.out.println("  !! UserName must be start with a letter.");
+			userName(scr);
+		}
+
+		return name;
+	}
+
+	private long userContact(Scanner scr) {
+		System.out.print("  >> Enter contact no : ");
+		long contact = scr.nextLong();
+
+		try {
+			if (!(contact > 999999999L && contact < 100000000000L)) {
+				System.out.println("  !! Please enter 10 digits");
+				userContact(scr);
+			}
+		} catch (InputMismatchException e) {
+			System.out.println("  !! Enter Number Only.");
+			userContact(scr);
+		} catch (Exception e) {
+			System.out.println("  !! Unknown Error.");
+			userContact(scr);
+		}
+		return contact;
+	}
+
+	private String userEmail(Scanner scr) {
+		System.out.print("  >> Enter your email : ");
+		String email = scr.next();
+
+		if (email.isBlank()) {
+			userEmail(scr);
+		}
+
+		boolean isSymbol = false, isDOT = false;
+
+		for (int i = 0; i < email.length(); i++) {
+			char ch = email.charAt(i);
+			if (ch == '@') {
+				isSymbol = true;
+			} else if (ch == '.') {
+				isDOT = true;
+			}
+		}
+
+		if (!(isSymbol || isDOT)) {
+			System.out.println("  !! Invalid email.");
+			userEmail(scr);
+		}
+
+		return email;
+	}
+
+	private String userPassword(Scanner scr) {
+
+		System.out.print("  >> Enter your password : ");
+		String password = scr.next();
+
+		if (password.isBlank()) {
+			userPassword(scr);
+		}
+
+		boolean isUppercase = false, isLowercase = false, isNumeric = false, isSpecial = false;
+
+		for (int i = 0; i < password.length(); i++) {
+			char ch = password.charAt(i);
+			if (ch >= 'A' && ch <= 'Z') {
+				isUppercase = true;
+			} else if (ch >= 'a' && ch <= 'z') {
+				isLowercase = true;
+			} else if (ch >= '0' && ch <= '9') {
+				isNumeric = true;
+			} else if (ch == ' ') {
+				System.out.println(" !! Space is Not allowed.");
+				userPassword(scr);
+			} else {
+				isSpecial = true;
+			}
+		}
+
+		if (!(password.length() > 8 && isUppercase && isLowercase && isNumeric && isSpecial)) {
+			System.out.println("  !! Weak Password.");
+			userPassword(scr);
+		}
+
+		return password;
 	}
 
 }
-//** ============================================================ ** //
-//** End : Registration. ** //
-//** ============================================================ ** //
+// User related stuff ended here.
+//============================================================//
+//============================================================//
 
-//** ============================================================ ** //
-//** Start : Biiling System. ** //
-//** ============================================================ ** //
-
-// ** Abstraction : BillingSystem Interface
+//============================================================//
+//============================================================//
+// Billing System
 interface BillingSystem {
+	void totalBill(Object obj, Scanner scr);
 
-	// Abstract Methods.
-	void totalBill();
+	void payment(Object obj, String pay, Scanner scr);
 
-	void payment(String pay);
-
-	void payment(double cash);
+	void payment(Object obj, double cash, Scanner scr);
 }
 
 class PaymentSystem implements BillingSystem {
 
+	HomePage homepage = new HomePage();
+	ArrayList<User> userCollection = new ArrayList<User>();
+	LinkedList<Manga> mangaCollection = new LinkedList<Manga>();
+	User user;
+
+	public void yourOrders(ArrayList<User> userCollection, LinkedList<Manga> mangaCollection, Scanner scr) {
+		System.out.println("  !! ## ** << Your Orders >> ** ## !! ");
+		for (Object obj : mangaCollection) {
+			Manga manga = (Manga) obj;
+			System.out.println("  " + manga.getId() + ". " + manga.getTitle());
+		}
+		System.out.println("  >> Press 0 for exit.");
+		System.out.println("  >> Press 9 for main Menu.");
+		System.out.println("| ** ============================================================ ** |");
+		try {
+			System.out.print("  >> Enter your choice: ");
+			int choice = scr.nextInt();
+			System.out.println("| ** ============================================================ ** |");
+			System.out.println();
+
+			switch (choice) {
+
+			case 0:
+				MangaShop.exit();
+				break;
+
+			case 9:
+				homepage.menu(userCollection, mangaCollection, scr);
+			default:
+
+			}
+		} catch (Exception e) {
+			yourOrders(userCollection, mangaCollection, scr);
+		}
+	}
+
 	static double bill;
 
-	public void totalBill() {
-
+	@Override
+	public void totalBill(Object obj, Scanner scr) {
+		Manga manga = (Manga) obj;
 		String paymentId;
 		// ** TypeCasting : Narrowing ( double >> int ).
 		int discount = (int) (bill * 0.1);
-
-		Scanner input = new Scanner(System.in);
 
 		System.out.println("  >> Your total bill amount is : " + bill);
 
@@ -225,109 +283,140 @@ class PaymentSystem implements BillingSystem {
 			System.out.println("| ** ============================================================ ** |");
 
 			System.out.print("  >> Enter your choice : ");
-			int choice = input.nextInt();
+			int choice = scr.nextInt();
 
 			System.out.println("| ** ============================================================ ** |");
 
 			switch (choice) {
 			case 1:
 				System.out.print("  >> Enter the UPI Id : ");
-				paymentId = input.nextLine();
-				input.nextLine();
-
-				// Method Calling System : Actual Arguments.
-				payment(paymentId);
+				paymentId = scr.next();
+				payment(manga, paymentId, scr);
 				break;
 			case 2:
 				System.out.print("  >> Enter the Paypal Id : ");
-				paymentId = input.nextLine();
-				input.nextLine();
-				// Method Calling System : Actual Arguments.
-				payment(paymentId);
+				paymentId = scr.next();
+				payment(manga, paymentId, scr);
 				break;
 			case 3:
-				// Method Calling System : Actual Arguments.
-				payment(bill);
+				payment(manga, bill, scr);
 				break;
 			default:
 				bill = bill + discount;
-				// Method Recursion : Recursive Calling Statement.
-				totalBill();
+				totalBill(manga, scr);
 				break;
 			}
 			System.exit(0);
+		} catch (InvalidInputException e) {
+			System.out.println("  !! Invalid userInput.");
+			totalBill(manga, scr);
 		} catch (Exception e) {
 			System.out.println("  !! There is someting wrong Please try again. !!  ");
-			totalBill();
+			totalBill(manga, scr);
 		}
 	}
 
-	// ** Polymorphism :
-	// ** Runtime Polymorphism - Method Overriding
-	// ** Compile Time Polymorphism - Method Overloading
-	public void payment(String paymentId) {
+	public void payment(Object obj, String paymentId, Scanner scr) {
 
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
+		try {
+			System.out.print("  >> Enter the amount : ");
+			double amount = scr.nextDouble();
 
-		System.out.print("  >> Enter the amount : ");
-		double amount = input.nextDouble();
+			System.out.println("  >> Thank you for paying : " + amount + "  ₹ /-");
+			System.out.println("| ** ============================================================ ** |");
+			mangaCollection.add((Manga) obj);
+			System.out.println("  >> Would you like to continue purchasing more manga, manhwa, and merchandise.");
+			System.out.print("  >> Press Y or y for yes and N or n for No : ");
 
-		System.out.println("  >> Thank you for paying : " + amount + "  ₹ /-");
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> Would you like to continue purchasing more manga, manhwa, and merchandise.");
-		System.out.print("  >> Press Y or y for yes and N or n for No : ");
-		char ch = input.next().charAt(0);
-		if (ch == 'y' || ch == 'Y') {
-			homepage.menu();
-		} else if (ch == 'n' || ch == 'N') {
-			System.exit(0);
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			payment(null);
+			char ch = scr.next().charAt(0);
+			if (ch == 'y' || ch == 'Y') {
+				homepage.menu(userCollection, mangaCollection, scr);
+			} else if (ch == 'n' || ch == 'N') {
+				System.exit(0);
+			} else {
+				throw new PaymentFailedException("  !! Payment Failed.");
+			}
+		} catch (InvalidInputException e) {
+			payment(obj, paymentId, scr);
+		} catch (PaymentFailedException e) {
+			System.out.println("  !! Unsuccessful : " + e);
+			totalBill(obj, scr);
+		} catch (Exception e) {
+			System.out.println("  !! There is something wrong.");
+			totalBill(obj, scr);
 		}
 
 	}
 
-	// ** Runtime Polymorphism - Method Overriding
-	// ** Compile Time Polymorphism - Method Overloading
-	public void payment(double cash) {
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
+	public void payment(Object obj, double cash, Scanner scr) {
 
 		System.out.println("  >> Thank you for paying : " + cash);
 		System.out.println("| ** ============================================================ ** |");
+		mangaCollection.add((Manga) obj);
 		System.out.println("  >> Would you like to continue purchasing more manga, manhwa, and merchandise.");
 		System.out.print("  >> Press Y or y for yes and N or n for No : ");
-		char ch = input.next().charAt(0);
-		if (ch == 'y' || ch == 'Y') {
-			homepage.menu();
-		} else if (ch == 'n' || ch == 'N') {
-			System.exit(0);
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			payment(null);
+		try {
+			char ch = scr.next().charAt(0);
+			if (ch == 'y' || ch == 'Y') {
+				homepage.menu(userCollection, mangaCollection, scr);
+			} else if (ch == 'n' || ch == 'N') {
+				MangaShop.exit();
+			} else {
+				throw new PaymentFailedException("  >> You have selected wrong option.");
+			}
+		} catch (PaymentFailedException e) {
+			System.out.println("Error : " + e);
+			payment(obj, cash, scr);
 		}
 	}
 }
-//** ============================================================ ** //
-//** End : Biiling System. ** //
-//** ============================================================ ** //
 
-//** ============================================================ ** //
-//** Start : HomePage Class. ** //
-//** ============================================================ ** //
+//============================================================//
+//============================================================//
 
-// Home Page
+//============================================================//
+//============================================================//
+// Custom Exception Handling mechanism.
+@SuppressWarnings("serial")
+class InvalidCredintialException extends Exception {
+	public InvalidCredintialException(String errorMessage) {
+		super(errorMessage);
+	}
+}
+
+@SuppressWarnings("serial")
+class InvalidInputException extends InputMismatchException {
+	public InvalidInputException(String errorMessage) {
+		super(errorMessage);
+	}
+}
+
+@SuppressWarnings("serial")
+class PaymentFailedException extends Exception {
+	public PaymentFailedException(String errorMessage) {
+		super(errorMessage);
+	}
+}
+//============================================================//
+//============================================================//
+
+//============================================================//
+//============================================================//
+// HomePage
+
 class HomePage {
 
-	public void menu() {
+	ArrayList<Manga> mangaList = new ArrayList<Manga>();
 
-		Scanner input = new Scanner(System.in);
+	public void menu(ArrayList<User> userCollection, LinkedList<Manga> mangaCollection, Scanner scr) {
 
-		System.out.println();
+		for (Object obj : userCollection) {
+			User user = (User) obj;
+			System.out.println(" !! ** ## << Welcome " + user.getName() + " >> ## ** !!");
+		}
+
+		System.out.println("| ** ============================================================ ** |");
 		System.out.println("                       ** choose your type **                         ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println("  >> Press 1 for kodomomuke (childrens).");
 		System.out.println("  >> Press 2 for shonen (young boys).");
@@ -335,1380 +424,1009 @@ class HomePage {
 		System.out.println("  >> Press 4 for Seinen (adult male).");
 		System.out.println("  >> Press 5 for Josei (adult female).");
 		System.out.println("  >> Press 0 for exit.");
+		System.out.println("  >> Press 9 for Your Order.");
 		System.out.println("  >> Press 99 for previous.");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice: ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
+		try {
+			System.out.print("  >> Enter your choice: ");
+			int choice = scr.nextInt();
+			System.out.println("| ** ============================================================ ** |");
+			System.out.println();
 
-		switch (choice) {
+			switch (choice) {
 
-		case 1:
-			kodomomuke();
-			break;
-		case 2:
-			shonenManga();
-			break;
-		case 3:
-			shojoManga();
-			break;
-		case 4:
-			seinenManga();
-			break;
-		case 5:
-			joseiManga();
-			break;
-		case 0:
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-			break;
-		case 99:
-			menu();
-			break;
-		default:
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| !!             Please enter the correct input.                  !! |");
-			System.out.println("| ** ============================================================ ** |");
-			menu();
-			break;
+			case 1:
+				kodomomuke(scr);
+				break;
+			case 2:
+				shonen(scr);
+				break;
+			case 3:
+				shojo(scr);
+				break;
+			case 4:
+				seinen(scr);
+				break;
+			case 5:
+				josei(scr);
+				break;
+			case 0:
+				MangaShop.exit();
+				break;
 
+			case 9:
+				PaymentSystem payment = new PaymentSystem();
+				payment.yourOrders(userCollection, mangaCollection, scr);
+				break;
+			case 99:
+				menu(userCollection, mangaCollection, scr);
+				break;
+			default:
+				throw new InvalidInputException("Please enter the correct input.");
+			}
+		} catch (InvalidInputException e) {
+			System.out.println("  !! Error : " + e);
+			menu(userCollection, mangaCollection, scr);
+		} catch (Exception e) {
+			menu(userCollection, mangaCollection, scr);
 		}
-
 	}
 
-	public void kodomomuke() {
-
-		Scanner input = new Scanner(System.in);
-//		BillingSystem payment = new PaymentSystem();
-
+	@SuppressWarnings("deprecation")
+	public void kodomomuke(Scanner scr) {
 		System.out.println("| ** ================ ** Manga for childrens. ** ================ ** |");
-		System.out.println();
 		System.out.println("                       ** choose your Manga **                        ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
 
-		KodomomukeManga doraemon = new KodomomukeManga(1, "Doraemon", "Manga", 45,
+		Manga doraemon = new Kodomomuke(1, "Doraemon", 45,
 				"Doraemon is cat shaped robot from the future traveling all the way back to the 20th century in order to help Nobi Nobita, a lazy kid with nothing really going for him. Nobi is bad at sports, his grades are terrible, he can't even win a match of rock-paper-scissors. Doraemon has a hard task ahead of him but he is well prepared with a huge arsenal of the most inventive and funny gadgets available. The problem is he's not the most competent robot cat helper out there either and the pair gets in constant trouble because of it. Thus begins one of the most interesting friendships ever to appear in a manga series.",
-				"Finished", "Dec 1969 to 1996", "Fujiko F. Fujio",
-				"Adventure, Award Winning, Comedy, Sci-Fi, Slice of Life", "Kids", 7412.07);
+				"Finished", new Date(1969, 12, 1, 0, 0), "Fujiko F. Fujio",
+				"Adventure, Award Winning, Comedy, Sci-Fi, Slice of Life", 7412.07);
 
-		System.out.println("  1. " + doraemon.title);
+		System.out.println("  1. " + doraemon.getTitle());
 
-		KodomomukeManga pokémonAdventures = new KodomomukeManga(2, "Pokémon Adventures", "Manga", 14,
+		Manga pokémonAdventures = new Kodomomuke(2, "Pokémon Adventures", 14,
 				"Red is just a normal kid living in the rural Pallet Town, when he decides to go out on his own adventure, along with his rival, Green. In this world of Pokémon, he makes many friends, humans and Pokémon alike. However, all is not well. Team Rocket is trying to capture Mew, a very rare Pokémon, and is performing experiments on other Pokémon, trying to increase their power. Red and his friends must battle against Team Rocket to stop their cruel experiments and unlock the secrets of Pokémon.",
-				"Finished", "Nov 1996 to Apr 28, 2003", "Hidenori Kusaka", "Action, Adventure", "Kids", 3498.26);
+				"Finished", new Date(1996, 11, 28, 0, 0), "Hidenori Kusaka", "Action, Adventure", 3498.26);
 
-		System.out.println("  2. " + pokémonAdventures.title);
+		System.out.println("  2. " + pokémonAdventures.getTitle());
 
-		KodomomukeManga megamanGigamix = new KodomomukeManga(3, "Megaman Gigamix", "Manga", 3,
+		Manga megamanGigamix = new Kodomomuke(3, "Megaman Gigamix", 3,
 				"Mega Man Gigamix is a manga drawn by Hitoshi Ariga and connected with Mega Man Megamix, being that some chapters are prequels and others are direct follow-ups. The manga was published by BN in three volumes between 2009-2010 in Japan and by Udon Entertainment between 2011-2012 in the United States.",
-				"Finished", "Nov 30, 2009 to Nov 27, 2010", "Ariga, Hitoshi", "Action, Adventure, Sci-Fi", "Kids",
-				999.50);
+				"Finished", new Date(2009, 11, 20, 0, 0), "Ariga, Hitoshi", "Action, Adventure, Sci-Fi", 999.50);
 
-		System.out.println("  3. " + megamanGigamix.title);
+		System.out.println("  3. " + megamanGigamix.getTitle());
 
-		KodomomukeManga astroBoy = new KodomomukeManga(4, "Astro Boy", "Manga", 3,
-				"A more modern version of Tetsuwan Atom.", "Finished", "Apr 2003 to Aug 2003", "Tezuka, Osamu",
-				"Action, Adventure, Sci-Fi", "Kids", 1999.01);
+		Manga astroBoy = new Kodomomuke(4, "Astro Boy", 3, "A more modern version of Tetsuwan Atom.", "Finished",
+				new Date(2003, 4, 10, 0, 0), "Tezuka, Osamu", "Action, Adventure, Sci-Fi", 1999.01);
 
-		System.out.println("  4. " + astroBoy.title);
+		System.out.println("  4. " + astroBoy.getTitle());
 
-		KodomomukeManga metalFightBeyblade = new KodomomukeManga(5, "Metal Fight Beyblade", "Manga", 11,
+		Manga metalFightBeyblade = new Kodomomuke(5, "Metal Fight Beyblade", 11,
 				"No synopsis information has been added to this title. Help improve our database by adding a synopsis here.",
-				"Finished", "Sep 13, 2008 to Feb 15, 2012", "Adachi, Takafumi", "Adventure, Sports", "Kids", 3165.10);
+				"Finished", new Date(2008, 9, 13, 0, 0), "Adachi, Takafumi", "Adventure, Sports", 3165.10);
 
-		System.out.println("  5. " + metalFightBeyblade.title);
+		System.out.println("  5. " + metalFightBeyblade.getTitle());
 
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 		System.out.println("  >> Press Number from above for your fav. Manga. ");
 		System.out.println("  >> Press 0 for exit.");
+		System.out.println("  >> Press 9 for Your Cart.");
 		System.out.println("  >> Press 99 for previous menu.");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (0 == choice) {
+		try {
+			System.out.print("  >> Enter your choice : ");
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			menu();
-		} else {
+			System.out.println();
+
+			Kodomomuke kodomomuke;
 
 			switch (choice) {
 			case 1:
-				doraemon.kodomomuke(doraemon);
+				kodomomuke = (Kodomomuke) doraemon;
+				kodomomuke.kodomomuke(mangaList, doraemon, scr);
 				break;
 
 			case 2:
-				pokémonAdventures.kodomomuke(pokémonAdventures);
+				kodomomuke = (Kodomomuke) pokémonAdventures;
+				kodomomuke.kodomomuke(mangaList, pokémonAdventures, scr);
 				break;
 
 			case 3:
-				megamanGigamix.kodomomuke(megamanGigamix);
+				kodomomuke = (Kodomomuke) megamanGigamix;
+				kodomomuke.kodomomuke(mangaList, megamanGigamix, scr);
 				break;
 
 			case 4:
-				astroBoy.kodomomuke(astroBoy);
+				kodomomuke = (Kodomomuke) astroBoy;
+				kodomomuke.kodomomuke(mangaList, astroBoy, scr);
 				break;
 
 			case 5:
-				metalFightBeyblade.kodomomuke(metalFightBeyblade);
+				kodomomuke = (Kodomomuke) metalFightBeyblade;
+				kodomomuke.kodomomuke(mangaList, metalFightBeyblade, scr);
+				break;
+
+			case 0:
+				MangaShop.exit();
+				break;
+
+			case 9:
+				cart(mangaList);
+				break;
+			case 99:
 				break;
 
 			default:
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("| !!             Please enter the correct input.                  !! |");
-				System.out.println("| ** ============================================================ ** |");
-				kodomomuke();
 			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+			kodomomuke(scr);
 		}
 	}
 
-	public void shonenManga() {
-		Scanner input = new Scanner(System.in);
-//		BillingSystem payment = new PaymentSystem();
+	@SuppressWarnings("deprecation")
+	public void shonen(Scanner scr) {
 
 		System.out.println("| ** ================ ** Manga for young boys. ** ================ ** |");
-		System.out.println();
 		System.out.println("                       ** choose your Manga **                        ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		ShonenManga naruto = new ShonenManga(1, "Naruto", "Manga", 72,
+		Manga naruto = new Shonen(1, "Naruto", 72,
 				"Whenever Naruto Uzumaki proclaims that he will someday become the Hokage—a title bestowed upon the best ninja in the Village Hidden in the Leaves—no one takes him seriously. Since birth, Naruto has been shunned and ridiculed by his fellow villagers. But their contempt isn't because Naruto is loud-mouthed, mischievous, or because of his ineptitude in the ninja arts, but because there is a demon inside him. Prior to Naruto's birth, the powerful and deadly Nine-Tailed Fox attacked the village. In order to stop the rampage, the Fourth Hokage sacrificed his life to seal the demon inside the body of the newborn Naruto.And so when he is assigned to Team 7—along with his new teammates Sasuke Uchiha and Sakura Haruno, under the mentorship of veteran ninja Kakashi Hatake—Naruto is forced to work together with other people for the first time in his life. Through undergoing vigorous training and taking on challenging missions, Naruto must learn what it means to work in a team and carve his own route toward becoming a full-fledged ninja recognized by his village.",
-				"Finished", "Sep 21, 1999 to Nov 10, 2014", "Masashi Kishimoto", "Action, Adventure, Fantasy",
-				"Young Boys (Shonen)", 10078.20);
-		System.out.println("  1. " + naruto.title);
+				"Finished", new Date(1999, 9, 21, 0, 0), "Masashi Kishimoto", "Action, Adventure, Fantasy", 10078.20);
+		System.out.println("  1. " + naruto.getTitle());
 
-		ShonenManga bleach = new ShonenManga(2, "Bleach", "Manga", 74,
-				"For as long as he can remember, high school student Ichigo Kurosaki has been able to see the spirits of the dead, but that has not stopped him from leading an ordinary life. One day, Ichigo returns home to find an intruder in his room who introduces herself as Rukia Kuchiki, a Soul Reaper tasked with helping souls pass over. Suddenly, the two are jolted from their conversation when a Hollow—an evil spirit known for consuming souls—attacks. As Ichigo makes a brash attempt to stop the Hollow, Rukia steps in and shields him from a counterattack. Injured and unable to keep fighting, Rukia suggests a risky plan—transfer half of her Soul Reaper powers to Ichigo. He accepts and, to Rukia's surprise, ends up absorbing her powers entirely, allowing him to easily dispatch the Hollow.\r\n"
-						+ "\r\n"
-						+ "Now a Soul Reaper himself, Ichigo must take up Rukia's duties of exterminating Hollows and protecting spirits, both living and dead. Along with his friends Orihime Inoue and Yasutora Sado—who later discover spiritual abilities of their own—Ichigo soon learns that the consequences of becoming a Soul Reaper and dealing with the world of spirits are far greater than he ever imagined.",
-				"Finished", "Aug 7, 2001 to Aug 22, 2016", "Kubo, Tite", "Action, Adventure, Award Winning, Fantasy",
-				"Young Boys (Shonen)", 9828.39);
-		System.out.println("  2. " + bleach.title);
+		Manga bleach = new Shonen(2, "Bleach", 74,
+				"For as long as he can remember, high school student Ichigo Kurosaki has been able to see the spirits of the dead, but that has not stopped him from leading an ordinary life. One day, Ichigo returns home to find an intruder in his room who introduces herself as Rukia Kuchiki, a Soul Reaper tasked with helping souls pass over. Suddenly, the two are jolted from their conversation when a Hollow—an evil spirit known for consuming souls—attacks. As Ichigo makes a brash attempt to stop the Hollow, Rukia steps in and shields him from a counterattack. Injured and unable to keep fighting, Rukia suggests a risky plan—transfer half of her Soul Reaper powers to Ichigo. He accepts and, to Rukia's surprise, ends up absorbing her powers entirely, allowing him to easily dispatch the Hollow. Now a Soul Reaper himself, Ichigo must take up Rukia's duties of exterminating Hollows and protecting spirits, both living and dead. Along with his friends Orihime Inoue and Yasutora Sado—who later discover spiritual abilities of their own—Ichigo soon learns that the consequences of becoming a Soul Reaper and dealing with the world of spirits are far greater than he ever imagined.",
+				"Finished", new Date(2001, 8, 7, 0, 0), "Kubo, Tite", "Action, Adventure, Award Winning, Fantasy",
+				9828.39);
+		System.out.println("  2. " + bleach.getTitle());
 
-		ShonenManga onepiece = new ShonenManga(3, "onepiece", "Manga", 106,
-				"Gol D. Roger, a man referred to as the \"King of the Pirates,\" is set to be executed by the World Government. But just before his demise, he confirms the existence of a great treasure, One Piece, located somewhere within the vast ocean known as the Grand Line. Announcing that One Piece can be claimed by anyone worthy enough to reach it, the King of the Pirates is executed and the Great Age of Pirates begins.\r\n"
-						+ "\r\n"
-						+ "Twenty-two years later, a young man by the name of Monkey D. Luffy is ready to embark on his own adventure, searching for One Piece and striving to become the new King of the Pirates. Armed with just a straw hat, a small boat, and an elastic body, he sets out on a fantastic journey to gather his own crew and a worthy ship that will take them across the Grand Line to claim the greatest status on the high seas.",
-				"Publishing", "Jul 22, 1997 to ?", "Oda, Eiichiro", "Action, Adventure, Fantasy", "Young Boys (Shonen)",
-				11660.80);
-		System.out.println("  3. " + onepiece.title);
+		Manga onepiece = new Shonen(3, "onepiece", 106,
+				"Gol D. Roger, a man referred to as the \"King of the Pirates,\" is set to be executed by the World Government. But just before his demise, he confirms the existence of a great treasure, One Piece, located somewhere within the vast ocean known as the Grand Line. Announcing that One Piece can be claimed by anyone worthy enough to reach it, the King of the Pirates is executed and the Great Age of Pirates begins. Twenty-two years later, a young man by the name of Monkey D. Luffy is ready to embark on his own adventure, searching for One Piece and striving to become the new King of the Pirates. Armed with just a straw hat, a small boat, and an elastic body, he sets out on a fantastic journey to gather his own crew and a worthy ship that will take them across the Grand Line to claim the greatest status on the high seas.",
+				"Publishing", new Date(1997, 7, 22, 0, 0), "Oda, Eiichiro", "Action, Adventure, Fantasy", 11660.80);
+		System.out.println("  3. " + onepiece.getTitle());
 
-		ShonenManga chainsawMan = new ShonenManga(4, "chainsawMan", "Manga", 15,
-				"Denji has a simple dream—to live a happy and peaceful life, spending time with a girl he likes. This is a far cry from reality, however, as Denji is forced by the yakuza into killing devils in order to pay off his crushing debts. Using his pet devil Pochita as a weapon, he is ready to do anything for a bit of cash.\r\n"
-						+ "\r\n"
-						+ "Unfortunately, he has outlived his usefulness and is murdered by a devil in contract with the yakuza. However, in an unexpected turn of events, Pochita merges with Denji's dead body and grants him the powers of a chainsaw devil. Now able to transform parts of his body into chainsaws, a revived Denji uses his new abilities to quickly and brutally dispatch his enemies. Catching the eye of the official devil hunters who arrive at the scene, he is offered work at the Public Safety Bureau as one of them. Now with the means to face even the toughest of enemies, Denji will stop at nothing to achieve his simple teenage dreams.",
-				"Publishing", "Dec 3, 2018 to ?", "Fujimoto, Tatsuki", "Action, Award Winning, Supernatural",
-				"Young Boys (Shonen)", 8329.15);
-		System.out.println("  4. " + chainsawMan.title);
+		Manga chainsawMan = new Shonen(4, "chainsawMan", 15,
+				"Denji has a simple dream—to live a happy and peaceful life, spending time with a girl he likes. This is a far cry from reality, however, as Denji is forced by the yakuza into killing devils in order to pay off his crushing debts. Using his pet devil Pochita as a weapon, he is ready to do anything for a bit of cash. Unfortunately, he has outlived his usefulness and is murdered by a devil in contract with the yakuza. However, in an unexpected turn of events, Pochita merges with Denji's dead body and grants him the powers of a chainsaw devil. Now able to transform parts of his body into chainsaws, a revived Denji uses his new abilities to quickly and brutally dispatch his enemies. Catching the eye of the official devil hunters who arrive at the scene, he is offered work at the Public Safety Bureau as one of them. Now with the means to face even the toughest of enemies, Denji will stop at nothing to achieve his simple teenage dreams.",
+				"Publishing", new Date(2018, 12, 3, 0, 0), "Fujimoto, Tatsuki", "Action, Award Winning, Supernatural",
+				8329.15);
+		System.out.println("  4. " + chainsawMan.getTitle());
 
-		ShonenManga demonSlayer = new ShonenManga(5, "demonSlayer", "Manga", 23,
-				"Tanjirou Kamado lives with his impoverished family on a remote mountain. As the oldest sibling, he took upon the responsibility of ensuring his family's livelihood after the death of his father. On a cold winter day, he goes down to the local village in order to sell some charcoal. As dusk falls, he is forced to spend the night in the house of a curious man who cautions him of strange creatures that roam the night: malevolent demons who crave human flesh.\r\n"
-						+ "\r\n"
-						+ "When he finally makes his way home, Tanjirou's worst nightmare comes true. His entire family has been brutally slaughtered with the sole exception of his sister Nezuko, who has turned into a flesh-eating demon. Engulfed in hatred and despair, Tanjirou desperately tries to stop Nezuko from attacking other people, setting out on a journey to avenge his family and find a way to turn his beloved sister back into a human.",
-				"Finished", "Feb 15, 2016 to May 18, 2020", "Gotouge, Koyoharu", "Action, Fantasy",
-				"Young Boys (Shonen)", 9162.06);
-		System.out.println("  5. " + demonSlayer.title);
+		Manga demonSlayer = new Shonen(5, "demonSlayer", 23,
+				"Tanjirou Kamado lives with his impoverished family on a remote mountain. As the oldest sibling, he took upon the responsibility of ensuring his family's livelihood after the death of his father. On a cold winter day, he goes down to the local village in order to sell some charcoal. As dusk falls, he is forced to spend the night in the house of a curious man who cautions him of strange creatures that roam the night: malevolent demons who crave human flesh. When he finally makes his way home, Tanjirou's worst nightmare comes true. His entire family has been brutally slaughtered with the sole exception of his sister Nezuko, who has turned into a flesh-eating demon. Engulfed in hatred and despair, Tanjirou desperately tries to stop Nezuko from attacking other people, setting out on a journey to avenge his family and find a way to turn his beloved sister back into a human.",
+				"Finished", new Date(2016, 2, 15, 0, 0), "Gotouge, Koyoharu", "Action, Fantasy", 9162.06);
+		System.out.println("  5. " + demonSlayer.getTitle());
 
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println();
 		System.out.println("  >> Press Number from above for your fav. Manga. ");
 		System.out.println("  >> Press 0 for exit.");
 		System.out.println("  >> Press 99 for previous menu.");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
+		try {
+			System.out.print("  >> Enter your choice : ");
+			int choice = scr.nextInt();
+			System.out.println("| ** ============================================================ ** |");
+			System.out.println();
 
-		if (0 == choice) {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			menu();
-		} else {
+			Shonen shonen;
 
 			switch (choice) {
+
 			case 1:
-				naruto.shonen(naruto);
+				shonen = (Shonen) naruto;
+				shonen.shonen(mangaList, naruto, scr);
 				break;
 
 			case 2:
-				bleach.shonen(bleach);
+				shonen = (Shonen) bleach;
+				shonen.shonen(mangaList, bleach, scr);
 				break;
 
 			case 3:
-				onepiece.shonen(onepiece);
+				shonen = (Shonen) onepiece;
+				shonen.shonen(mangaList, onepiece, scr);
 				break;
 
 			case 4:
-				chainsawMan.shonen(chainsawMan);
+				shonen = (Shonen) chainsawMan;
+				shonen.shonen(mangaList, chainsawMan, scr);
 				break;
 
 			case 5:
-				demonSlayer.shonen(demonSlayer);
+				shonen = (Shonen) demonSlayer;
+				shonen.shonen(mangaList, demonSlayer, scr);
 				break;
-
+			case 0:
+				MangaShop.exit();
+				break;
 			default:
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("| !!             Please enter the correct input.                  !! |");
-				System.out.println("| ** ============================================================ ** |");
-				shonenManga();
+
 			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+			shonen(scr);
+
 		}
 	}
 
-	public void shojoManga() {
-		Scanner input = new Scanner(System.in);
-//		BillingSystem payment = new PaymentSystem();
+	@SuppressWarnings("deprecation")
+	public void shojo(Scanner scr) {
 
 		System.out.println("| ** ================ ** Manga for young girls. ** ================ ** |");
-		System.out.println();
 		System.out.println("                       ** choose your Manga **                        ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		ShojoManga aoHaruRide = new ShojoManga(1, "Ao Haru Ride", "Manga", 13,
+		Manga aoHaruRide = new Shojo(1, "Ao Haru Ride", 13,
 				"While most girls desire popularity among boys, Futaba Yoshioka wants the exact opposite. After attracting many admirers back in middle school which resulted in her being shunned by her female classmates, she decided that high school will be her chance to revamp her image. Therefore, she starts acting unfeminine and indifferent to boys, allowing her to make some friends along the way. Little does Futaba know, her life will take another drastic turn when her first love, Kou Mabuchi, returns after his sudden disappearance years ago in middle school. Despite his extended absence, the fond memories they shared together still linger in her mind, and she wishes to return to those days. But she realizes that the sweet, gentle boy of the past has completely vanished, and in his place stands someone cold and pessimistic. While he admits that her feelings for him back then were mutual, he warns that they can never go back to the past, as everything, including him, has changed. Ao Haru Ride follows Futaba as she searches for true love and friendship, all while trying her best to stay true to herself.",
-				"Finished", " Jan 13, 2011 to Feb 13, 2015", "Sakisaka, Io", "Romance", "Young girls", 60);
-		System.out.println("  1. " + aoHaruRide.title);
+				"Finished", new Date(2011, 1, 13, 0, 0), "Sakisaka, Io", "Romance", 60);
+		System.out.println("  1. " + aoHaruRide.getTitle());
 
-		ShojoManga lastGame = new ShojoManga(2, "Last Game", "Manga", 11,
+		Manga lastGame = new Shojo(2, "Last Game", 11,
 				"Nothing is beyond Naoto Yanagi, heir to the Yanagi business conglomerate. Idolized for his athletic and intellectual competence, looks and wealth, Naoto lived like a king during his elementary school days—then entered Mikoto Kujou, a plain, gloomy-looking transfer student.  Due to her low financial status, Naoto was initially apathetic towards Mikoto. But despite having just arrived at his school, she completely eclipsed him in everything by consistently scoring top marks in exams and placing first in athletic events. After a brief confrontation with her that left him shocked, Naoto vowed to outdo her no matter the cost.  Ten years later, they are now students attending the same college. Having failed to defeat Mikoto throughout middle and high school, Naoto decides they will have one last game: if he can make Mikoto fall in love with him and then break her heart, it will be his victory. However, he finds himself falling in love with her instead…",
-				"Finished", "Aug 24, 2011 to Jun 24, 2016", "Amano, Shinobu", "Comedy, Romance", "Young girls", 77);
-		System.out.println("  2. " + lastGame.title);
+				"Finished", new Date(2011, 8, 24, 0, 0), "Amano, Shinobu", "Comedy, Romance", 77);
+		System.out.println("  2. " + lastGame.getTitle());
 
-		ShojoManga orange = new ShojoManga(3, "Orange", "Manga", 7,
+		Manga orange = new Shojo(3, "Orange", 7,
 				"One morning, Naho Takamiya receives a letter in the mail claiming to be from herself 10 years in the future. The letter reveals a series of events that are supposed to take place that day. At first, Naho thinks it's just a prank; but when the letter mentions a transfer student named Kakeru Naruse, who really ends up transferring into her class later that day, she is forced to believe in its contents.  As Naho continues to read the letter, her future self mentions several regrets, urging Naho to take the right decisions now. Somehow these regrets all seem to be connected to Kakeru, and with the burden of the knowledge that the boy wouldn't be with her and her friends in the future, will Naho be able to make the perfect choices that will alter what seems to be fate?",
-				"Finished", "Mar 13, 2012 to Apr 8, 2022", "Takano, Ichigo", "Drama, Romance, Sci-Fi", "Young Girls",
-				80);
-		System.out.println("  3. " + orange.title);
+				"Finished", new Date(2012, 3, 13, 0, 0), "Takano, Ichigo", "Drama, Romance, Sci-Fi", 80);
+		System.out.println("  3. " + orange.getTitle());
 
-		ShojoManga tommie = new ShojoManga(4, "Tomie", "Manga", 3,
+		Manga tommie = new Shojo(4, "Tomie", 3,
 				"In a high school classroom, students mourn the loss of one of their own: Tomie Kawakami, who has been murdered and dismembered. Shocked by the announcement of her death, the class is puzzled by the cruel fate that has befallen someone so dear to them; such a radiant and beautiful girl did not deserve such a hideous demise. However, a strikingly familiar student suddenly appears at the classroom's entrance. Gorgeous, slender, and with a beauty mark under her left eye, Tomie smiles and apologizes for being late.  But this is just the beginning of the mysteries surrounding this seemingly inhuman woman. The men unlucky enough to catch her eye become smitten with her instantly, but also become driven by a dark impulse to dismember her, one they often succumb to. And each time, Tomie returns from the dead to continue her favorite pastime: toying with men. ",
-				"Finished", "1987 to 2000", "Itou, Junji", "Drama, Horror, Supernatural", "Young girls", 90);
-		System.out.println("  4. " + tommie.title);
+				"Finished", new Date(1987, 1, 1, 0, 0), "Itou, Junji", "Drama, Horror, Supernatural", 90);
+		System.out.println("  4. " + tommie.getTitle());
 
-		ShojoManga highSchoolDebut = new ShojoManga(5, "High School Debut", "Manga", 15,
+		Manga highSchoolDebut = new Shojo(5, "High School Debut", 15,
 				"While in middle school, Haruna Nagashima threw herself into playing softball while secretly dreaming of finding romance, but without any luck. High school has just started for her, and she now has the perfect chance to fall in love with a potential boyfriend. But there's one problem—she has no idea where to begin!  On her first day of school, she accidentally bumps into You Komiyama, the most popular boy in the year. With his stunning looks, Haruna is positive he can help. The handsome boy reluctantly agrees to coach her about love under one condition: she must not fall in love with him. Under You's guidance, will Haruna be able to kick off her high school debut and find herself a boyfriend?",
-				"Finished", "Aug 13, 2003 to May 13, 2013", "Kawahara, Kazune", "Comedy, Romance", "Young girls", 50);
-		System.out.println("  5. " + highSchoolDebut.title);
+				"Finished", new Date(2003, 8, 13, 0, 0), "Kawahara, Kazune", "Comedy, Romance", 50);
+		System.out.println("  5. " + highSchoolDebut.getTitle());
 
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println();
 		System.out.println("  >> Press Number from above for your fav. Manga. ");
 		System.out.println("  >> Press 0 for exit.");
 		System.out.println("  >> Press 99 for previous menu.");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (0 == choice) {
+		try {
+			System.out.print("  >> Enter your choice : ");
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			menu();
-		} else {
+			System.out.println();
+
+			Shojo shojo;
 
 			switch (choice) {
 			case 1:
-				aoHaruRide.shojo(aoHaruRide);
+				shojo = (Shojo) aoHaruRide;
+				shojo.shojo(mangaList, aoHaruRide, scr);
 				break;
 
 			case 2:
-				lastGame.shojo(lastGame);
+				shojo = (Shojo) lastGame;
+				shojo.shojo(mangaList, lastGame, scr);
 				break;
 
 			case 3:
-				orange.shojo(orange);
+				shojo = (Shojo) lastGame;
+				shojo.shojo(mangaList, orange, scr);
 				break;
 
 			case 4:
-				tommie.shojo(tommie);
+				shojo = (Shojo) lastGame;
+				shojo.shojo(mangaList, tommie, scr);
 				break;
 
 			case 5:
-				highSchoolDebut.shojo(highSchoolDebut);
+				shojo = (Shojo) lastGame;
+				shojo.shojo(mangaList, highSchoolDebut, scr);
+				break;
+
+			case 0:
+				MangaShop.exit();
 				break;
 
 			default:
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("| !!             Please enter the correct input.                  !! |");
-				System.out.println("| ** ============================================================ ** |");
-				shojoManga();
+
 			}
+		} catch (Exception e) {
+			System.out.println("  !! Error : " + e);
+			shojo(scr);
 		}
 	}
 
-	public void seinenManga() {
-
-		Scanner input = new Scanner(System.in);
-//		BillingSystem payment = new PaymentSystem();
+	@SuppressWarnings("deprecation")
+	public void seinen(Scanner scr) {
 
 		System.out.println("| ** ================ ** Manga for Adult Male. ** ================ ** |");
-		System.out.println();
 		System.out.println("                       ** choose your Manga **                        ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> Press Number for your fav. Manga. ");
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		SeinenManga berserk = new SeinenManga(1, "Berserk", "Manga", 42, "Guts, a former mercenary now known as the Black Swordsman, is out for revenge. After a tumultuous childhood, he finally finds someone he respects and believes he can trust, only to have everything fall apart when this person takes away everything important to Guts for the purpose of fulfilling his own desires. Now marked for death, Guts becomes condemned to a fate in which he is relentlessly pursued by demonic beings.  Setting out on a dreadful quest riddled with misfortune, Guts, armed with a massive sword and monstrous strength, will let nothing stop him, not even death itself, until he is finally able to take the head of the one who stripped him—and his loved one—of their humanity.", "Publishing", " Aug 25, 1989 to ?", "Miura, Kentarou", " Action, Adventure, Award Winning, Drama, Fantasy, Horror, Supernatural", "Adult Male", 160);
-		System.out.println("  1. " + berserk.title);
+		Manga berserk = new Seinen(1, "Berserk", 42,
+				"Guts, a former mercenary now known as the Black Swordsman, is out for revenge. After a tumultuous childhood, he finally finds someone he respects and believes he can trust, only to have everything fall apart when this person takes away everything important to Guts for the purpose of fulfilling his own desires. Now marked for death, Guts becomes condemned to a fate in which he is relentlessly pursued by demonic beings.  Setting out on a dreadful quest riddled with misfortune, Guts, armed with a massive sword and monstrous strength, will let nothing stop him, not even death itself, until he is finally able to take the head of the one who stripped him—and his loved one—of their humanity.",
+				"Publishing", new Date(1989, 8, 25, 0, 0), "Miura, Kentarou",
+				" Action, Adventure, Award Winning, Drama, Fantasy, Horror, Supernatural", 160);
+		System.out.println("  1. " + berserk.getTitle());
 
-		SeinenManga monster = new SeinenManga(2, "Monster", "Manga", 18, "Kenzou Tenma, a renowned Japanese neurosurgeon working in post-war Germany, faces a difficult choice: to operate on Johan Liebert, an orphan boy on the verge of death, or on the mayor of Düsseldorf. In the end, Tenma decides to gamble his reputation by saving Johan, effectively leaving the mayor for dead.  As a consequence of his actions, hospital director Heinemann strips Tenma of his position, and Heinemann's daughter Eva breaks off their engagement. Disgraced and shunned by his colleagues, Tenma loses all hope of a successful career—that is, until the mysterious killing of Heinemann gives him another chance.  Nine years later, Tenma is the head of the surgical department and close to becoming the director himself. Although all seems well for him at first, he soon becomes entangled in a chain of gruesome murders that have taken place throughout Germany. The culprit is a monster—the same one that Tenma saved on that fateful day nine years ago. ", "Finished", "Dec 5, 1994 to Dec 20, 2001", "Urasawa, Naoki", "Award Winning, Drama, Mystery", "Adult Male", 67);
-		System.out.println("  2. " + monster.title);
+		Manga monster = new Seinen(2, "Monster", 18,
+				"Kenzou Tenma, a renowned Japanese neurosurgeon working in post-war Germany, faces a difficult choice: to operate on Johan Liebert, an orphan boy on the verge of death, or on the mayor of Düsseldorf. In the end, Tenma decides to gamble his reputation by saving Johan, effectively leaving the mayor for dead.  As a consequence of his actions, hospital director Heinemann strips Tenma of his position, and Heinemann's daughter Eva breaks off their engagement. Disgraced and shunned by his colleagues, Tenma loses all hope of a successful career—that is, until the mysterious killing of Heinemann gives him another chance.  Nine years later, Tenma is the head of the surgical department and close to becoming the director himself. Although all seems well for him at first, he soon becomes entangled in a chain of gruesome murders that have taken place throughout Germany. The culprit is a monster—the same one that Tenma saved on that fateful day nine years ago. ",
+				"Finished", new Date(1994, 12, 5, 0, 0), "Urasawa, Naoki", "Award Winning, Drama, Mystery", 67);
+		System.out.println("  2. " + monster.getTitle());
 
-		SeinenManga onePunchMan = new SeinenManga(3, "One-Punch Man", "Manga", 29, "After rigorously training for three years, the ordinary Saitama has gained immense strength which allows him to take out anyone and anything with just one punch. He decides to put his new skill to good use by becoming a hero. However, he quickly becomes bored with easily defeating monsters, and wants someone to give him a challenge to bring back the spark of being a hero.  Upon bearing witness to Saitama's amazing power, Genos, a cyborg, is determined to become Saitama's apprentice. During this time, Saitama realizes he is neither getting the recognition that he deserves nor known by the people due to him not being a part of the Hero Association. Wanting to boost his reputation, Saitama decides to have Genos register with him, in exchange for taking him in as a pupil. Together, the two begin working their way up toward becoming true heroes, hoping to find strong enemies and earn respect in the process.", "Publishing", "Jun 14, 2012 to ?", "Murata, Yusuke, ONE", "Action, Comedy", "Adult Male", 120);
-		System.out.println("  3. " + onePunchMan.title);
+		Manga onePunchMan = new Seinen(3, "One-Punch Man", 29,
+				"After rigorously training for three years, the ordinary Saitama has gained immense strength which allows him to take out anyone and anything with just one punch. He decides to put his new skill to good use by becoming a hero. However, he quickly becomes bored with easily defeating monsters, and wants someone to give him a challenge to bring back the spark of being a hero.  Upon bearing witness to Saitama's amazing power, Genos, a cyborg, is determined to become Saitama's apprentice. During this time, Saitama realizes he is neither getting the recognition that he deserves nor known by the people due to him not being a part of the Hero Association. Wanting to boost his reputation, Saitama decides to have Genos register with him, in exchange for taking him in as a pupil. Together, the two begin working their way up toward becoming true heroes, hoping to find strong enemies and earn respect in the process.",
+				"Publishing", new Date(2012, 6, 14, 0, 0), "Murata, Yusuke, ONE", "Action, Comedy", 120);
+		System.out.println("  3. " + onePunchMan.getTitle());
 
-		SeinenManga vinlandSaga = new SeinenManga(4, "Vinland Saga", "Manga", 27, "Thorfinn, son of one of the Vikings' greatest warriors, is among the finest fighters in the merry band of mercenaries run by the cunning Askeladd, an impressive feat for a person his age. However, Thorfinn is not part of the group for the plunder it entails—instead, for having caused his family great tragedy, the boy has vowed to kill Askeladd in a fair duel. Not yet skilled enough to defeat him, but unable to abandon his vengeance, Thorfinn spends his boyhood with the mercenary crew, honing his skills on the battlefield among the war-loving Danes, where killing is just another pleasure of life.  One day, when Askeladd receives word that Danish prince Canute has been taken hostage, he hatches an ambitious plot—one that will decide the next King of England and drastically alter the lives of Thorfinn, Canute, and himself. Set in 11th-century Europe, Vinland Saga tells a bloody epic in an era where violence, madness, and injustice are inescapable, providing a paradise for the battle-crazed and utter hell for the rest who live in it. ", "Publishing", "Apr 13, 2005 to ?", "Yukimura, Makoto", "Action, Adventure, Award Winning, Drama", "Adult Male", 99);
-		System.out.println("  4. " + vinlandSaga.title);
+		Manga vinlandSaga = new Seinen(4, "Vinland Saga", 27,
+				"Thorfinn, son of one of the Vikings' greatest warriors, is among the finest fighters in the merry band of mercenaries run by the cunning Askeladd, an impressive feat for a person his age. However, Thorfinn is not part of the group for the plunder it entails—instead, for having caused his family great tragedy, the boy has vowed to kill Askeladd in a fair duel. Not yet skilled enough to defeat him, but unable to abandon his vengeance, Thorfinn spends his boyhood with the mercenary crew, honing his skills on the battlefield among the war-loving Danes, where killing is just another pleasure of life.  One day, when Askeladd receives word that Danish prince Canute has been taken hostage, he hatches an ambitious plot—one that will decide the next King of England and drastically alter the lives of Thorfinn, Canute, and himself. Set in 11th-century Europe, Vinland Saga tells a bloody epic in an era where violence, madness, and injustice are inescapable, providing a paradise for the battle-crazed and utter hell for the rest who live in it. ",
+				"Publishing", new Date(2005, 4, 13, 0, 0), "Yukimura, Makoto",
+				"Action, Adventure, Award Winning, Drama", 99);
+		System.out.println("  4. " + vinlandSaga.getTitle());
 
-		SeinenManga vagabond = new SeinenManga(5, "Vagabond", "Manga", 37, "In 16th-century Japan, Shinmen Takezou is a wild, rough young man, in both his appearance and his actions. His aggressive nature has won him the collective reproach and fear of his village, leading him and his best friend, Matahachi Honiden, to run away in search of something grander than provincial life. The pair enlist in the Toyotomi army, yearning for glory—but when the Toyotomi suffer a crushing defeat at the hands of the Tokugawa Clan at the Battle of Sekigahara, the friends barely make it out alive.  After the two are separated, Shinmen returns home on a self-appointed mission to notify the Hon'iden family of Matahachi's survival. He instead finds himself a wanted criminal, framed for his friend's supposed murder based on his history of violence. Upon being captured, he is strung up on a tree and left to die. An itinerant monk, the distinguished Takuan Soho, takes pity on the devil child, secretly freeing Shinmen and christening him with a new name to avoid pursuit by the authorities: Musashi Miyamoto.  Vagabond is the fictitious retelling of the life of one of Japan's most renowned swordsmen, the Sword Saint Musashi Miyamoto—his rise from a swordsman with no desire other than to become Invincible Under the Heavens to an enlightened warrior who slowly learns of the importance of close friends, self-reflection, and life itself.", "On Hiatus", "Sep 3, 1998 to May 21, 2015", "Inoue, Takehiko, Yoshikawa, Eiji", "Action, Adventure, Award Winning", "Adult Male", 120);
-		System.out.println("  5. " + vagabond.title);
+		Manga vagabond = new Seinen(5, "Vagabond", 37,
+				"In 16th-century Japan, Shinmen Takezou is a wild, rough young man, in both his appearance and his actions. His aggressive nature has won him the collective reproach and fear of his village, leading him and his best friend, Matahachi Honiden, to run away in search of something grander than provincial life. The pair enlist in the Toyotomi army, yearning for glory—but when the Toyotomi suffer a crushing defeat at the hands of the Tokugawa Clan at the Battle of Sekigahara, the friends barely make it out alive.  After the two are separated, Shinmen returns home on a self-appointed mission to notify the Hon'iden family of Matahachi's survival. He instead finds himself a wanted criminal, framed for his friend's supposed murder based on his history of violence. Upon being captured, he is strung up on a tree and left to die. An itinerant monk, the distinguished Takuan Soho, takes pity on the devil child, secretly freeing Shinmen and christening him with a new name to avoid pursuit by the authorities: Musashi Miyamoto.  Vagabond is the fictitious retelling of the life of one of Japan's most renowned swordsmen, the Sword Saint Musashi Miyamoto—his rise from a swordsman with no desire other than to become Invincible Under the Heavens to an enlightened warrior who slowly learns of the importance of close friends, self-reflection, and life itself.",
+				"On Hiatus", new Date(1998, 9, 3, 0, 0), "Inoue, Takehiko, Yoshikawa, Eiji",
+				"Action, Adventure, Award Winning", 120);
+		System.out.println("  5. " + vagabond.getTitle());
 
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println();
 
 		System.out.println("  >> Press 0 for exit.");
 		System.out.println("  >> Press 99 for previous menu.");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (0 == choice) {
+		try {
+			System.out.print("  >> Enter your choice : ");
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			menu();
-		} else {
+			System.out.println();
 
+			Seinen seinen;
 			switch (choice) {
 			case 1:
-				berserk.seinen(berserk);
+				seinen = (Seinen) berserk;
+				seinen.seinen(mangaList, berserk, scr);
 				break;
 
 			case 2:
-				monster.seinen(monster);
+				seinen = (Seinen) monster;
+				seinen.seinen(mangaList, monster, scr);
 				break;
 
 			case 3:
-				onePunchMan.seinen(onePunchMan);
+				seinen = (Seinen) onePunchMan;
+				seinen.seinen(mangaList, onePunchMan, scr);
 				break;
 
 			case 4:
-				vinlandSaga.seinen(vinlandSaga);
+				seinen = (Seinen) vinlandSaga;
+				seinen.seinen(mangaList, vinlandSaga, scr);
 				break;
 
 			case 5:
-				vagabond.seinen(vagabond);
+				seinen = (Seinen) vagabond;
+				seinen.seinen(mangaList, vagabond, scr);
 				break;
 
 			default:
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("| !!             Please enter the correct input.                  !! |");
-				System.out.println("| ** ============================================================ ** |");
-				shonenManga();
 			}
+		} catch (Exception e) {
+			shonen(scr);
 		}
 	}
 
-	public void joseiManga() {
-
-		Scanner input = new Scanner(System.in);
-//		BillingSystem payment = new PaymentSystem();
+	@SuppressWarnings("deprecation")
+	public void josei(Scanner scr) {
 
 		System.out.println("| ** ================ ** Manga for Adult Female. ** ================ ** |");
-		System.out.println();
 		System.out.println("                       ** choose your Manga **                        ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println("  >> Press Number for your fav. Manga. ");
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println();
 
-		JoseiManga usagiDrop = new JoseiManga(1, "Usagi Drop", "Manga", 10, "When bachelor Daikichi Kawachi attends his grandfather's funeral, he is surprised to find a mysterious young girl alone in the garden. To his astonishment, the shy and reserved girl, named Rin Kaga, is believed to be the illegitimate child of his late grandfather.  Due to the shameful circumstances related to the little girl, no one in the family is willing to take her in following her father's death. Infuriated by the coldness extended to an innocent child, Daikichi announces that he will take care of Rin himself, despite his young age, single status, and lack of parental experience.  Usagi Drop follows the story of Daikichi and Rin as they try to find happiness and purpose to their fateful meeting. ", "Finished", "Oct 8, 2005 to Dec 8, 2011", "Unita, Yumi", "Comedy, Drama, Slice of Life", "Adult Female", 66);
-		System.out.println("  1. " + usagiDrop.title);
+		Manga usagiDrop = new Josei(1, "Usagi Drop", 10,
+				"When bachelor Daikichi Kawachi attends his grandfather's funeral, he is surprised to find a mysterious young girl alone in the garden. To his astonishment, the shy and reserved girl, named Rin Kaga, is believed to be the illegitimate child of his late grandfather.  Due to the shameful circumstances related to the little girl, no one in the family is willing to take her in following her father's death. Infuriated by the coldness extended to an innocent child, Daikichi announces that he will take care of Rin himself, despite his young age, single status, and lack of parental experience.  Usagi Drop follows the story of Daikichi and Rin as they try to find happiness and purpose to their fateful meeting. ",
+				"Finished", new Date(2005, 10, 8, 0, 0), "Unita, Yumi", "Comedy, Drama, Slice of Life", 66);
+		System.out.println("  1. " + usagiDrop.getTitle());
 
-		SeinenManga chihayafuru = new SeinenManga(2, "Chihayafuru", "Manga", 50, "Always deemed inferior to her elder sister, the strong-willed yet aimless Chihaya Ayase has no dream of her own. In contrast to her, Taichi Mashima, the son of a surgeon, is gifted yet insecure as he is burdened by the heavy expectations of his strict mother, who wants him to be perfect in everything. However, the lives of Chihaya and Taichi soon change as they encounter Arata Wataya, the new transfer student in their class.  Inspired by Arata's dream to become the best at competitive karuta—a card game based on the classic anthology of one hundred Japanese poets—Chihaya quickly falls in love with the game. Refusing to lose to the talented Arata, the prideful Taichi joins along and immerses himself in the game, aiming to one day surpass his fated rival. The three friends spend their childhood practicing karuta everyday, until certain circumstances force them to part with each other.  A few years later, now in high school, the trio finds themselves reunited through the world of competitive karuta. Alongside their newfound comrades and rivals, they embark on a journey of self-discovery, friendship, and romance.", "Finished", "Dec 28, 2007 to Aug 1, 2022", "Suetsugu, Yuki", "Award Winning, Drama, Mystery", "Adult Female", 88);
-		System.out.println("  2. " + chihayafuru.title);
+		Manga chihayafuru = new Josei(2, "Chihayafuru", 50,
+				"Always deemed inferior to her elder sister, the strong-willed yet aimless Chihaya Ayase has no dream of her own. In contrast to her, Taichi Mashima, the son of a surgeon, is gifted yet insecure as he is burdened by the heavy expectations of his strict mother, who wants him to be perfect in everything. However, the lives of Chihaya and Taichi soon change as they encounter Arata Wataya, the new transfer student in their class.  Inspired by Arata's dream to become the best at competitive karuta—a card game based on the classic anthology of one hundred Japanese poets—Chihaya quickly falls in love with the game. Refusing to lose to the talented Arata, the prideful Taichi joins along and immerses himself in the game, aiming to one day surpass his fated rival. The three friends spend their childhood practicing karuta everyday, until certain circumstances force them to part with each other.  A few years later, now in high school, the trio finds themselves reunited through the world of competitive karuta. Alongside their newfound comrades and rivals, they embark on a journey of self-discovery, friendship, and romance.",
+				"Finished", new Date(2007, 12, 8, 0, 0), "Suetsugu, Yuki", "Award Winning, Drama, Mystery", 88);
+		System.out.println("  2. " + chihayafuru.getTitle());
 
-		SeinenManga kuragehime = new SeinenManga(3, "Kuragehime", "Manga", 17, "Tsukimi Kurashita has wanted to be a princess ever since her youth. However, at 18 years old, she finds herself far from that dream. Instead, she has become a plain and shy girl who spends most of her time and money on her biggest obsession: jellyfish.  Tsukimi lives with her fellow niche hobbyists in the all-female Amamizukan apartment complex, where the two most important rules are to avoid stylish people and men. Tsukimi has always abided by these rules until one evening—while rescuing a spotted jellyfish—she encounters a classy, princess-like woman. After allowing the girl to stay the night, Tsukimi is shocked to discover that the person is not a woman at all.", "Finished", "Oct 25, 2008 to Aug 25, 2017", "Higashimura, Akiko", "Award Winning, Comedy", "Adult Female", 77);
-		System.out.println("  3. " + kuragehime.title);
+		Manga kuragehime = new Josei(3, "Kuragehime", 17,
+				"Tsukimi Kurashita has wanted to be a princess ever since her youth. However, at 18 years old, she finds herself far from that dream. Instead, she has become a plain and shy girl who spends most of her time and money on her biggest obsession: jellyfish.  Tsukimi lives with her fellow niche hobbyists in the all-female Amamizukan apartment complex, where the two most important rules are to avoid stylish people and men. Tsukimi has always abided by these rules until one evening—while rescuing a spotted jellyfish—she encounters a classy, princess-like woman. After allowing the girl to stay the night, Tsukimi is shocked to discover that the person is not a woman at all.",
+				"Finished", new Date(2008, 10, 25, 0, 0), "Higashimura, Akiko", "Award Winning, Comedy", 77);
+		System.out.println("  3. " + kuragehime.getTitle());
 
-		SeinenManga karneval = new SeinenManga(4, "Karneval", "Manga", 28, "Naive boy Nai has been looking for someone important to him, with only an old bracelet and the name Karoku as his clues to their whereabouts. Along the way, he becomes ensnared by a monstrous woman hellbent on keeping him as a pet. But soon, he is saved by a clever and crafty thief named Gareki, who has broken into the woman's house to loot it. The two find themselves labeled as wanted criminals and end up entangled in the affairs of Circus—the country's most powerful defense organization. Circus is responsible for protecting the nation's citizens from entities known as varuga—monsters who consume human flesh—as well as uncovering the operations of a mysterious organization called Kafka.  Circus has taken an interest in Nai upon learning that the bracelet he possessed turns out to be an old Circus ID. While Nai decides to stay in Circus' care, Gareki struggles to find his place aboard the ship. As their search for Karoku deepens, the pair encounter more dangerous varuga who all seem to gravitate toward Nai.", "Finished", "Aug 28, 2007 to Oct 28, 2021", "Mikanagi, Touya", "Action, Fantasy, Mystery, Sci-Fi", "Adult Female", 99);
-		System.out.println("  4. " + karneval.title);
+		Manga karneval = new Josei(4, "Karneval", 28,
+				"Naive boy Nai has been looking for someone important to him, with only an old bracelet and the name Karoku as his clues to their whereabouts. Along the way, he becomes ensnared by a monstrous woman hellbent on keeping him as a pet. But soon, he is saved by a clever and crafty thief named Gareki, who has broken into the woman's house to loot it. The two find themselves labeled as wanted criminals and end up entangled in the affairs of Circus—the country's most powerful defense organization. Circus is responsible for protecting the nation's citizens from entities known as varuga—monsters who consume human flesh—as well as uncovering the operations of a mysterious organization called Kafka.  Circus has taken an interest in Nai upon learning that the bracelet he possessed turns out to be an old Circus ID. While Nai decides to stay in Circus' care, Gareki struggles to find his place aboard the ship. As their search for Karoku deepens, the pair encounter more dangerous varuga who all seem to gravitate toward Nai.",
+				"Finished", new Date(2007, 8, 28, 0, 0), "Mikanagi, Touya", "Action, Fantasy, Mystery, Sci-Fi", 99);
+		System.out.println("  4. " + karneval.getTitle());
 
-		SeinenManga _07Ghost = new SeinenManga(5, "07-Ghost", "Manga", 17, "The students of the Barsburg Empire's Military Academy are trained to become capable fighters who will serve as the empire's newest soldiers. Every year, five hundred students take a graduation exam, where only 20 can pass to become honorable begleiters, a position equivalent to assistant executive officers. Students fight their enemies by using zaiphon, God-given abilities that take different forms depending on the individual.  Teito Klein, the academy chairman's favorite student, is belittled by his peers due to his previous status as a slave. Despite being unable to fully remember his past, Teito's cheerful best friend, Mikage Celestine, stays by his side. After the two undergo the exam, Teito recalls small pieces of a long-forgotten memory, causing him to instinctively attack the chief-of-staff, Ayanami.  Subdued for his insubordination, Teito is imprisoned for further questioning. But with the help of Mikage, Teito escapes to the Barsburg Church in the empire's Seventh District. As he struggles to escape the clutches of the Barsburg Empire's military, he unveils the memories that lie within him and learns about a compelling power that roams in the shadows of the empire. ", "Finished", "Apr 28, 2005 to Aug 28, 2013", "Amemiya, Yuki, Ichihara, Yukino", "Action, Fantasy, Mystery, Sci-Fi", "Adult Female", 100);
-		System.out.println("  5. " + _07Ghost.title);
+		Manga _07Ghost = new Josei(5, "07-Ghost", 17,
+				"The students of the Barsburg Empire's Military Academy are trained to become capable fighters who will serve as the empire's newest soldiers. Every year, five hundred students take a graduation exam, where only 20 can pass to become honorable begleiters, a position equivalent to assistant executive officers. Students fight their enemies by using zaiphon, God-given abilities that take different forms depending on the individual.  Teito Klein, the academy chairman's favorite student, is belittled by his peers due to his previous status as a slave. Despite being unable to fully remember his past, Teito's cheerful best friend, Mikage Celestine, stays by his side. After the two undergo the exam, Teito recalls small pieces of a long-forgotten memory, causing him to instinctively attack the chief-of-staff, Ayanami.  Subdued for his insubordination, Teito is imprisoned for further questioning. But with the help of Mikage, Teito escapes to the Barsburg Church in the empire's Seventh District. As he struggles to escape the clutches of the Barsburg Empire's military, he unveils the memories that lie within him and learns about a compelling power that roams in the shadows of the empire. ",
+				"Finished", new Date(2005, 4, 28, 0, 0), "Amemiya, Yuki, Ichihara, Yukino",
+				"Action, Fantasy, Mystery, Sci-Fi", 100);
+		System.out.println("  5. " + _07Ghost.getTitle());
 
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
 		System.out.println("  >> Press 0 for exit.");
 		System.out.println("  >> Press 99 for previous menu.");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (0 == choice) {
+		try {
+			System.out.print("  >> Enter your choice : ");
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			menu();
-		} else {
+			System.out.println();
+
+			Josei josei;
 
 			switch (choice) {
 			case 1:
-				usagiDrop.josei(usagiDrop);
+				josei = (Josei) usagiDrop;
+				josei.josei(mangaList, usagiDrop, scr);
 				break;
 
 			case 2:
-				chihayafuru.seinen(chihayafuru);
+				josei = (Josei) chihayafuru;
+				josei.josei(mangaList, chihayafuru, scr);
 				break;
 
 			case 3:
-				kuragehime.seinen(kuragehime);
+				josei = (Josei) kuragehime;
+				josei.josei(mangaList, kuragehime, scr);
 				break;
 
 			case 4:
-				karneval.seinen(karneval);
+				josei = (Josei) karneval;
+				josei.josei(mangaList, karneval, scr);
 				break;
 
 			case 5:
-				_07Ghost.seinen(_07Ghost);
+				josei = (Josei) _07Ghost;
+				josei.josei(mangaList, _07Ghost, scr);
 				break;
 
 			default:
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("| !!             Please enter the correct input.                  !! |");
-				System.out.println("| ** ============================================================ ** |");
-				shonenManga();
+
 			}
+		} catch (Exception e) {
+			System.out.println("  !! Error : " + e);
+		}
+	}
+
+	public void cart(ArrayList<Manga> mangaList) {
+		System.out.println("  !! ## $$ ** << Your Cart >> ** $$ ## !! ");
+		for (Object obj : mangaList) {
+			Manga manga = (Manga) obj;
+			System.out.println(manga.getId() + " " + manga.getTitle());
 		}
 	}
 }
+//============================================================//
+//============================================================//
 
-class PrivacyProtected {
+//============================================================//
+//============================================================//
+// Manga 
 
+class Manga {
+	// Manga information
+	private int Id;
+	private String title;
+	private int volumes;
+	private String description;
+	private String status;
+	private Date date;
 	private String author;
-	private String producers;
-	private String licensors;
-	private String studios;
+	private String genre;
+	private double price;
+
+	public Manga(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, double price) {
+		this.Id = Id;
+		this.title = title;
+		this.volumes = volumes;
+		this.description = description;
+		this.status = status;
+		this.date = date;
+		this.author = author;
+		this.genre = genre;
+		this.price = price;
+	}
+
+	public int getId() {
+		return Id;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public int getVolumes() {
+		return volumes;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public double getPrice() {
+		return price;
+	}
 
 	public String getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(String author) {
-		this.author = author;
+	public String getGenre() {
+		return genre;
 	}
 
-	public String getProducers() {
-		return producers;
-	}
+	HomePage homepage = new HomePage();
+	BillingSystem paymentSystem = new PaymentSystem();
+	ArrayList<User> userCollection;
 
-	public void setProducers(String producers) {
-		this.producers = producers;
-	}
+	public void mangaBill(Object obj, Scanner scr) {
+		Manga manga = (Manga) obj;
 
-	public String getLicensors() {
-		return licensors;
-	}
-
-	public void setLicensors(String licensors) {
-		this.licensors = licensors;
-	}
-
-	public String getStudios() {
-		return studios;
-	}
-
-	public void setStudios(String studios) {
-		this.studios = studios;
-	}
-
-}
-
-//Statistics
-class Statistics {
-
-	// anime statistics
-	double rating;
-	double score;
-	double ranked;
-	long popularity;
-	long members;
-	long favorites;
-
-	// anime social sites and fandom
-	String official_site;
-	String fandom;
-
-	Statistics(double rating, double score, double ranked, long popularity, long members, long favorites,
-			String official_site, String watch_online, String fandom) {
-		this.rating = rating;
-		this.score = score;
-		this.ranked = ranked;
-		this.popularity = popularity;
-		this.members = members;
-		this.favorites = favorites;
-		this.official_site = official_site;
-		this.fandom = fandom;
-	}
-
-}
-
-// Manga
-class Manga {
-	// anime information
-	int Id;
-	String title;
-	String type;
-	int volumes;
-	String description;
-	String status;
-	String published;
-	double price;
-	String source;
-	String genre;
-	String demographic;
-}
-
-//Kodomomuke (children's) --> Sub class
-class KodomomukeManga extends Manga {
-	// Constructor
-	KodomomukeManga(int Id, String title, String type, int volumes, String description, String status, String published,
-			String source, String genre, String demographic, double price) {
-
-		// anime information
-		this.Id = Id;
-		this.title = title;
-		this.type = type;
-		this.volumes = volumes;
-		this.description = description;
-		this.status = status;
-		this.published = published;
-		this.source = source;
-		this.genre = genre;
-		this.demographic = demographic;
-		this.price = price;
-
-	}
-
-	public void details() {
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
-
-		System.out.println();
-		System.out.println("                             ** Details **                            ");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  ## Title : " + title);
-		System.out.println("  ## Type : " + type);
-		System.out.println("  ## volumes : " + volumes);
-		System.out.println("  ## Status : " + status);
-		System.out.println("  ## Pubished Date : " + published);
-		System.out.println("  ## Source : " + source);
-		System.out.println("  ## Genre : " + genre);
-		System.out.println("  ## Demographic : " + demographic);
-		System.out.println("  ## Description : " + description);
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + title + " Manga.");
-		System.out.println("  >> The price is " + price + "  ₹ /-");
-		System.out.println("  >> Press 0 to exit.");
-		System.out.println("  >> Press 1 to place order.");
-		System.out.println("  >> Press 99 to go back.");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
-
-		if (choice == 1) {
-			PaymentSystem.bill = PaymentSystem.bill + price;
-		} else if (choice == 99) {
-			kodomomuke(null);
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.menu();
-		}
-
-		System.out.println("  >> Do you want to choose another Manga?");
-		System.out.print("  >> If yes then press Y and for No press N : ");
-		char ch = input.next().charAt(0);
-		if (ch == 'y' || ch == 'Y') {
-			homepage.kodomomuke();
-		} else if (ch == 'n' || ch == 'N') {
-			paymentSystem.totalBill();
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.kodomomuke();
-		}
-
-	}
-
-	public void kodomomuke(KodomomukeManga kodomomuke) {
-
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
-
-		System.out.println("                       ** " + kodomomuke.title + " **                        ");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + kodomomuke.title);
-		System.out.println("  >> Volumes : " + kodomomuke.volumes);
-		System.out.println("  >> Pirce : " + kodomomuke.price + " ₹ /-");
-		System.out.println("  >> Description : " + kodomomuke.description);
-		System.out.println("  >> Press 1 for more details.");
-		System.out.println("  >> Press 2 for purchase.");
-		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 99 for previous menu.");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
-
-		if (1 == choice) {
-			System.out.println("                       ** " + kodomomuke.title + " **                        ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			kodomomuke.details();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
-		} else if (2 == choice) {
-			System.out.println();
-			System.out.println("                        ** Billing Process **                         ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("  >> You have selected " + kodomomuke.title + " Manga.");
-			System.out.println("  >> The price is " + kodomomuke.price + "  ₹ /-");
-			System.out.println("  >> Press 0 to exit.");
-			System.out.println("  >> Press 1 to place order.");
-			System.out.println("  >> Press 99 to go back.");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
+		try {
 			System.out.print("  >> Enter your choice : ");
-			choice = input.nextInt();
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
 
 			if (choice == 1) {
-				PaymentSystem.bill = PaymentSystem.bill + kodomomuke.price;
+				PaymentSystem.bill = PaymentSystem.bill + manga.getPrice();
+				paymentSystem.totalBill(manga, scr);
 			} else if (choice == 99) {
-				homepage.kodomomuke();
+				homepage.kodomomuke(scr);
 			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.menu();
+				throw new InvalidInputException("  >> You have selected wrong option.");
 			}
 
 			System.out.println("  >> Do you want to choose another Manga?");
 			System.out.print("  >> If yes then press Y and for No press N : ");
-			char ch = input.next().charAt(0);
+
+			char ch = scr.next().charAt(0);
+
 			if (ch == 'y' || ch == 'Y') {
-				homepage.kodomomuke();
+				homepage.kodomomuke(scr);
 			} else if (ch == 'n' || ch == 'N') {
-				paymentSystem.totalBill();
+				MangaShop.exit();
 			} else {
-				System.out.println("  >> You have selected wrong option.");
+				throw new InvalidInputException("  >> You have selected wrong option.");
+			}
+		} catch (InvalidInputException e) {
+			System.out.println("Error : " + e);
+			mangaBill(manga, scr);
+		} catch (Exception e) {
+			mangaBill(manga, scr);
+		}
+
+	}
+}
+
+class Kodomomuke extends Manga {
+	public Kodomomuke(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, double price) {
+		super(Id, title, volumes, description, status, date, author, genre, price);
+	}
+
+	public void kodomomuke(ArrayList<Manga> mangaList, Object obj, Scanner scr) {
+
+		Kodomomuke kodomomuke = (Kodomomuke) obj;
+
+		System.out.println("                       ** Order Process **                        ");
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  >> You have selected " + kodomomuke.getTitle());
+		System.out.println("  >> Volumes : " + kodomomuke.getVolumes());
+		System.out.println("  >> Pirce : " + kodomomuke.getPrice() + " ₹ /-");
+		System.out.println("  >> Press 1 for more details.");
+		System.out.println("  >> Press 2 for purchase.");
+		System.out.println("  >> Press 0 for exit.");
+		System.out.println("  >> Press 99 for main menu.");
+		System.out.println("| ** ============================================================ ** |");
+
+		try {
+
+			System.out.print("  >> Enter your choice : ");
+			int choice = scr.nextInt();
+			System.out.println("| ** ============================================================ ** |");
+
+			if (1 == choice) {
+				System.out.println(kodomomuke);
+				mangaBill(kodomomuke, scr);
+			} else if (2 == choice) {
+				System.out.println("                        ** Billing Process **                         ");
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("  >> You have selected " + kodomomuke.getTitle() + " Manga.");
+				System.out.println("  >> The price is " + kodomomuke.getPrice() + "  ₹ /-");
+				System.out.println("  >> Press 0 to exit.");
+				System.out.println("  >> Press 1 to place order.");
+				System.out.println("  >> Press 99 to go back.");
 				System.out.println();
-				homepage.kodomomuke();
+				System.out.println("| ** ============================================================ ** |");
+				mangaBill(kodomomuke, scr);
+			} else if (0 == choice) {
+				MangaShop.exit();
+			} else if (99 == choice) {
+				homepage.kodomomuke(scr);
+			} else {
+				throw new InvalidInputException("Please enter the correct input.");
 			}
-		} else if (0 == choice) {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			homepage.kodomomuke();
-		} else {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| !!             Please enter the correct input.                  !! |");
-			System.out.println("| ** ============================================================ ** |");
-			kodomomuke(null);
+		} catch (InvalidInputException e) {
+			System.out.println("  !! Error : " + e);
+			kodomomuke(mangaList, kodomomuke, scr);
 		}
+	}
+
+	@Override
+	public String toString() {
+		System.out.println("                             ** Details **                            ");
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  ## Title : " + getTitle());
+		System.out.println("  ## volumes : " + getVolumes());
+		System.out.println("  ## Status : " + getStatus());
+		System.out.println("  ## Pubished Date : " + getDate());
+		System.out.println("  ## Source : " + getAuthor());
+		System.out.println("  ## Genre : " + getGenre());
+		System.out.println("  ## Description : " + getDescription());
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  >> The price is " + getPrice() + "  ₹ /-");
+		System.out.println("  >> Press 0 to exit.");
+		System.out.println("  >> Press 1 to place order.");
+		System.out.println("  >> Press 99 to go Main menu.");
+		System.out.println("| ** ============================================================ ** |");
+		return "";
 	}
 
 }
 
-//Shonen (Young boys) --> Sub class
-class ShonenManga extends Manga {
-	// Constructor
-	ShonenManga(int Id, String title, String type, int volumes, String description, String status, String published,
-			String source, String genre, String demographic, double price) {
+class Shonen extends Manga {
 
-		// anime information
-		this.Id = Id;
-		this.title = title;
-		this.type = type;
-		this.volumes = volumes;
-		this.description = description;
-		this.status = status;
-		this.published = published;
-		this.source = source;
-		this.genre = genre;
-		this.demographic = demographic;
-		this.price = price;
-
+	public Shonen(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, double price) {
+		super(Id, title, volumes, description, status, date, author, genre, price);
 	}
 
-	public void details() {
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
+	public void shonen(ArrayList<Manga> mangaList, Object obj, Scanner scr) {
 
-		System.out.println();
-		System.out.println("                             ** Details **                            ");
-		System.out.println();
+		Shonen shonen = (Shonen) obj;
+
+		System.out.println("                       ** Order Process **                        ");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  ## Title : " + title);
-		System.out.println("  ## Type : " + type);
-		System.out.println("  ## volumes : " + volumes);
-		System.out.println("  ## Status : " + status);
-		System.out.println("  ## Pubished Date : " + published);
-		System.out.println("  ## Source : " + source);
-		System.out.println("  ## Genre : " + genre);
-		System.out.println("  ## Demographic : " + demographic);
-		System.out.println("  ## Description : " + description);
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + title + " Manga.");
-		System.out.println("  >> The price is " + price + "  ₹ /-");
-		System.out.println("  >> Press 0 to exit.");
-		System.out.println("  >> Press 1 to place order.");
-		System.out.println("  >> Press 99 to go back.");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
-
-		if (choice == 1) {
-			PaymentSystem.bill = PaymentSystem.bill + price;
-		} else if (choice == 99) {
-			shonen(null);
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.menu();
-		}
-
-		System.out.println("  >> Do you want to choose another Manga?");
-		System.out.print("  >> If yes then press Y and for No press N : ");
-		char ch = input.next().charAt(0);
-		if (ch == 'y' || ch == 'Y') {
-			homepage.shonenManga();
-		} else if (ch == 'n' || ch == 'N') {
-			paymentSystem.totalBill();
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.shonenManga();
-		}
-
-	}
-
-	public void shonen(ShonenManga shonen) {
-
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
-
-		System.out.println("                       ** " + shonen.title + " **                        ");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + shonen.title);
-		System.out.println("  >> Volumes : " + shonen.volumes);
-		System.out.println("  >> Pirce : " + shonen.price + " ₹ /-");
-		System.out.println("  >> Description : " + shonen.description);
+		System.out.println("  >> You have selected " + shonen.getTitle());
+		System.out.println("  >> Volumes : " + shonen.getVolumes());
+		System.out.println("  >> Pirce : " + shonen.getPrice() + " ₹ /-");
 		System.out.println("  >> Press 1 for more details.");
 		System.out.println("  >> Press 2 for purchase.");
 		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 99 for previous menu.");
-		System.out.println();
+		System.out.println("  >> Press 99 for main menu.");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (1 == choice) {
-			System.out.println("                       ** " + shonen.title + " **                        ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			shonen.details();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
-		} else if (2 == choice) {
-			System.out.println();
-			System.out.println("                        ** Billing Process **                         ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("  >> You have selected " + shonen.title + " Manga.");
-			System.out.println("  >> The price is " + shonen.price + "  ₹ /-");
-			System.out.println("  >> Press 0 to exit.");
-			System.out.println("  >> Press 1 to place order.");
-			System.out.println("  >> Press 99 to go back.");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
+		try {
+
 			System.out.print("  >> Enter your choice : ");
-			choice = input.nextInt();
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
 
-			if (choice == 1) {
-				PaymentSystem.bill = PaymentSystem.bill + shonen.price;
-			} else if (choice == 99) {
-				homepage.shonenManga();
+			if (1 == choice) {
+				System.out.println(shonen);
+				mangaBill(shonen, scr);
+			} else if (2 == choice) {
+				System.out.println("                        ** Billing Process **                         ");
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("  >> You have selected " + shonen.getTitle() + " Manga.");
+				System.out.println("  >> The price is " + shonen.getPrice() + "  ₹ /-");
+				System.out.println("  >> Press 0 to exit.");
+				System.out.println("  >> Press 1 to place order.");
+				System.out.println("  >> Press 99 to go back.");
+				System.out.println();
+				System.out.println("| ** ============================================================ ** |");
+				mangaBill(shonen, scr);
+			} else if (0 == choice) {
+				MangaShop.exit();
+			} else if (99 == choice) {
+				homepage.kodomomuke(scr);
 			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.menu();
+				throw new InvalidInputException("Please enter the correct input.");
 			}
-
-			System.out.println("  >> Do you want to choose another Manga?");
-			System.out.print("  >> If yes then press Y and for No press N : ");
-			char ch = input.next().charAt(0);
-			if (ch == 'y' || ch == 'Y') {
-				homepage.shonenManga();
-			} else if (ch == 'n' || ch == 'N') {
-				paymentSystem.totalBill();
-			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.shonenManga();
-			}
-		} else if (0 == choice) {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			homepage.shonenManga();
-		} else {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| !!             Please enter the correct input.                  !! |");
-			System.out.println("| ** ============================================================ ** |");
-			shonen(null);
+		} catch (InvalidInputException e) {
+			System.out.println("  !! Error : " + e);
+			shonen(mangaList, shonen, scr);
 		}
 	}
 
-}
-
-//Shojo (Young girls) --> Sub class
-class ShojoManga extends Manga {
-	// Constructor
-	ShojoManga(int Id, String title, String type, int volumes, String description, String status, String published,
-			String source, String genre, String demographic, double price) {
-
-		// anime information
-		this.Id = Id;
-		this.title = title;
-		this.type = type;
-		this.volumes = volumes;
-		this.description = description;
-		this.status = status;
-		this.published = published;
-		this.source = source;
-		this.genre = genre;
-		this.demographic = demographic;
-		this.price = price;
-
-	}
-
-	public void details() {
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
-
-		System.out.println();
+	@Override
+	public String toString() {
 		System.out.println("                             ** Details **                            ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  ## Title : " + title);
-		System.out.println("  ## Type : " + type);
-		System.out.println("  ## volumes : " + volumes);
-		System.out.println("  ## Status : " + status);
-		System.out.println("  ## Pubished Date : " + published);
-		System.out.println("  ## Source : " + source);
-		System.out.println("  ## Genre : " + genre);
-		System.out.println("  ## Demographic : " + demographic);
-		System.out.println("  ## Description : " + description);
+		System.out.println("  ## Title : " + getTitle());
+		System.out.println("  ## volumes : " + getVolumes());
+		System.out.println("  ## Status : " + getStatus());
+		System.out.println("  ## Pubished Date : " + getDate());
+		System.out.println("  ## Source : " + getAuthor());
+		System.out.println("  ## Genre : " + getGenre());
+		System.out.println("  ## Description : " + getDescription());
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + title + " Manga.");
-		System.out.println("  >> The price is " + price + "  ₹ /-");
+		System.out.println("  >> The price is " + getPrice() + "  ₹ /-");
 		System.out.println("  >> Press 0 to exit.");
 		System.out.println("  >> Press 1 to place order.");
-		System.out.println("  >> Press 99 to go back.");
-		System.out.println();
+		System.out.println("  >> Press 99 to go Main menu.");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
+		return "";
+	}
+}
 
-		if (choice == 1) {
-			PaymentSystem.bill = PaymentSystem.bill + price;
-		} else if (choice == 99) {
-			shojo(null);
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.menu();
-		}
+class Shojo extends Manga {
 
-		System.out.println("  >> Do you want to choose another Manga?");
-		System.out.print("  >> If yes then press Y and for No press N : ");
-		char ch = input.next().charAt(0);
-		if (ch == 'y' || ch == 'Y') {
-			homepage.shojoManga();
-		} else if (ch == 'n' || ch == 'N') {
-			paymentSystem.totalBill();
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.shojoManga();
-		}
-
+	public Shojo(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, double price) {
+		super(Id, title, volumes, description, status, date, author, genre, price);
 	}
 
-	public void shojo(ShojoManga shojo) {
+	public void shojo(ArrayList<Manga> mangaList, Object obj, Scanner scr) {
 
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
+		Shojo shojo = (Shojo) obj;
 
-		System.out.println("                       ** " + shojo.title + " **                        ");
-		System.out.println();
+		System.out.println("                       ** Order Process **                        ");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + shojo.title);
-		System.out.println("  >> Volumes : " + shojo.volumes);
-		System.out.println("  >> Pirce : " + shojo.price + " ₹ /-");
-		System.out.println("  >> Description : " + shojo.description);
+		System.out.println("  >> You have selected " + shojo.getTitle());
+		System.out.println("  >> Volumes : " + shojo.getVolumes());
+		System.out.println("  >> Pirce : " + shojo.getPrice() + " ₹ /-");
 		System.out.println("  >> Press 1 for more details.");
 		System.out.println("  >> Press 2 for purchase.");
 		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 99 for previous menu.");
-		System.out.println();
+		System.out.println("  >> Press 99 for main menu.");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (1 == choice) {
-			System.out.println("                       ** " + shojo.title + " **                        ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			shojo.details();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
-		} else if (2 == choice) {
-			System.out.println();
-			System.out.println("                        ** Billing Process **                         ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("  >> You have selected " + shojo.title + " Manga.");
-			System.out.println("  >> The price is " + shojo.price + "  ₹ /-");
-			System.out.println("  >> Press 0 to exit.");
-			System.out.println("  >> Press 1 to place order.");
-			System.out.println("  >> Press 99 to go back.");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
+		try {
+
 			System.out.print("  >> Enter your choice : ");
-			choice = input.nextInt();
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
 
-			if (choice == 1) {
-				PaymentSystem.bill = PaymentSystem.bill + shojo.price;
-			} else if (choice == 99) {
-				homepage.shojoManga();
+			if (1 == choice) {
+				System.out.println(shojo);
+				mangaBill(shojo, scr);
+			} else if (2 == choice) {
+				System.out.println("                        ** Billing Process **                         ");
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("  >> You have selected " + shojo.getTitle() + " Manga.");
+				System.out.println("  >> The price is " + shojo.getPrice() + "  ₹ /-");
+				System.out.println("  >> Press 0 to exit.");
+				System.out.println("  >> Press 1 to place order.");
+				System.out.println("  >> Press 99 to go back.");
+				System.out.println();
+				System.out.println("| ** ============================================================ ** |");
+				mangaBill(shojo, scr);
+			} else if (0 == choice) {
+				MangaShop.exit();
+			} else if (99 == choice) {
+				homepage.kodomomuke(scr);
 			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.menu();
+				throw new InvalidInputException("Please enter the correct input.");
 			}
-
-			System.out.println("  >> Do you want to choose another Manga?");
-			System.out.print("  >> If yes then press Y and for No press N : ");
-			char ch = input.next().charAt(0);
-			if (ch == 'y' || ch == 'Y') {
-				homepage.shojoManga();
-			} else if (ch == 'n' || ch == 'N') {
-				paymentSystem.totalBill();
-			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.shojoManga();
-			}
-		} else if (0 == choice) {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			homepage.shojoManga();
-		} else {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| !!             Please enter the correct input.                  !! |");
-			System.out.println("| ** ============================================================ ** |");
-			shojo(null);
+		} catch (InvalidInputException e) {
+			System.out.println("  !! Error : " + e);
+			shojo(mangaList, shojo, scr);
 		}
+	}
+
+	@Override
+	public String toString() {
+		System.out.println("                             ** Details **                            ");
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  ## Title : " + getTitle());
+		System.out.println("  ## volumes : " + getVolumes());
+		System.out.println("  ## Status : " + getStatus());
+		System.out.println("  ## Pubished Date : " + getDate());
+		System.out.println("  ## Source : " + getAuthor());
+		System.out.println("  ## Genre : " + getGenre());
+		System.out.println("  ## Description : " + getDescription());
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  >> The price is " + getPrice() + "  ₹ /-");
+		System.out.println("  >> Press 0 to exit.");
+		System.out.println("  >> Press 1 to place order.");
+		System.out.println("  >> Press 99 to go Main menu.");
+		System.out.println("| ** ============================================================ ** |");
+		return "";
 	}
 
 }
 
-//Seinen (adult male) --> Sub class
-class SeinenManga extends Manga {
-	// Constructor
-	SeinenManga(int Id, String title, String type, int volumes, String description, String status, String published,
-			String source, String genre, String demographic, double price) {
+class Seinen extends Manga {
 
-		// anime information
-		this.Id = Id;
-		this.title = title;
-		this.type = type;
-		this.volumes = volumes;
-		this.description = description;
-		this.status = status;
-		this.published = published;
-		this.source = source;
-		this.genre = genre;
-		this.demographic = demographic;
-		this.price = price;
+	public Seinen(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, double price) {
+		super(Id, title, volumes, description, status, date, author, genre, price);
 	}
 
-	public void details() {
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
+	public void seinen(ArrayList<Manga> mangaList, Object obj, Scanner scr) {
 
-		System.out.println();
-		System.out.println("                             ** Details **                            ");
-		System.out.println();
+		Seinen seinen = (Seinen) obj;
+
+		System.out.println("                       ** Order Process **                        ");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  ## Title : " + title);
-		System.out.println("  ## Type : " + type);
-		System.out.println("  ## volumes : " + volumes);
-		System.out.println("  ## Status : " + status);
-		System.out.println("  ## Pubished Date : " + published);
-		System.out.println("  ## Source : " + source);
-		System.out.println("  ## Genre : " + genre);
-		System.out.println("  ## Demographic : " + demographic);
-		System.out.println("  ## Description : " + description);
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + title + " Manga.");
-		System.out.println("  >> The price is " + price + "  ₹ /-");
-		System.out.println("  >> Press 0 to exit.");
-		System.out.println("  >> Press 1 to place order.");
-		System.out.println("  >> Press 99 to go back.");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
-
-		if (choice == 1) {
-			PaymentSystem.bill = PaymentSystem.bill + price;
-		} else if (choice == 99) {
-			seinen(null);
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.menu();
-		}
-
-		System.out.println("  >> Do you want to choose another Manga?");
-		System.out.print("  >> If yes then press Y and for No press N : ");
-		char ch = input.next().charAt(0);
-		if (ch == 'y' || ch == 'Y') {
-			homepage.seinenManga();
-		} else if (ch == 'n' || ch == 'N') {
-			paymentSystem.totalBill();
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.seinenManga();
-		}
-
-	}
-
-	public void seinen(SeinenManga seinen) {
-
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
-
-		System.out.println("                       ** " + seinen.title + " **                        ");
-		System.out.println();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + seinen.title);
-		System.out.println("  >> Volumes : " + seinen.volumes);
-		System.out.println("  >> Pirce : " + seinen.price + " ₹ /-");
-		System.out.println("  >> Description : " + seinen.description);
+		System.out.println("  >> You have selected " + seinen.getTitle());
+		System.out.println("  >> Volumes : " + seinen.getVolumes());
+		System.out.println("  >> Pirce : " + seinen.getPrice() + " ₹ /-");
 		System.out.println("  >> Press 1 for more details.");
 		System.out.println("  >> Press 2 for purchase.");
 		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 99 for previous menu.");
-		System.out.println();
+		System.out.println("  >> Press 99 for main menu.");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (1 == choice) {
-			System.out.println("                       ** " + seinen.title + " **                        ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			seinen.details();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
-		} else if (2 == choice) {
-			System.out.println();
-			System.out.println("                        ** Billing Process **                         ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("  >> You have selected " + seinen.title + " Manga.");
-			System.out.println("  >> The price is " + seinen.price + "  ₹ /-");
-			System.out.println("  >> Press 0 to exit.");
-			System.out.println("  >> Press 1 to place order.");
-			System.out.println("  >> Press 99 to go back.");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
+		try {
+
 			System.out.print("  >> Enter your choice : ");
-			choice = input.nextInt();
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
 
-			if (choice == 1) {
-				PaymentSystem.bill = PaymentSystem.bill + seinen.price;
-			} else if (choice == 99) {
-				homepage.seinenManga();
+			if (1 == choice) {
+				System.out.println(seinen);
+				mangaBill(seinen, scr);
+			} else if (2 == choice) {
+				System.out.println("                        ** Billing Process **                         ");
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("  >> You have selected " + seinen.getTitle() + " Manga.");
+				System.out.println("  >> The price is " + seinen.getPrice() + "  ₹ /-");
+				System.out.println("  >> Press 0 to exit.");
+				System.out.println("  >> Press 1 to place order.");
+				System.out.println("  >> Press 99 to go back.");
+				System.out.println();
+				System.out.println("| ** ============================================================ ** |");
+				mangaBill(seinen, scr);
+			} else if (0 == choice) {
+				MangaShop.exit();
+			} else if (99 == choice) {
+				homepage.kodomomuke(scr);
 			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.menu();
+				throw new InvalidInputException("Please enter the correct input.");
 			}
-
-			System.out.println("  >> Do you want to choose another Manga?");
-			System.out.print("  >> If yes then press Y and for No press N : ");
-			char ch = input.next().charAt(0);
-			if (ch == 'y' || ch == 'Y') {
-				homepage.seinenManga();
-			} else if (ch == 'n' || ch == 'N') {
-				paymentSystem.totalBill();
-			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.seinenManga();
-			}
-		} else if (0 == choice) {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			homepage.seinenManga();
-		} else {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| !!             Please enter the correct input.                  !! |");
-			System.out.println("| ** ============================================================ ** |");
-			seinen(null);
+		} catch (InvalidInputException e) {
+			System.out.println("  !! Error : " + e);
+			seinen(mangaList, seinen, scr);
 		}
 	}
 
-}
-
-//Josei (adult female) --> Sub class
-class JoseiManga extends Manga {
-	// Constructor
-	JoseiManga(int Id, String title, String type, int volumes, String description, String status, String published,
-			String source, String genre, String demographic, double price) {
-
-		// anime information
-		this.Id = Id;
-		this.title = title;
-		this.type = type;
-		this.volumes = volumes;
-		this.description = description;
-		this.status = status;
-		this.published = published;
-		this.source = source;
-		this.genre = genre;
-		this.demographic = demographic;
-		this.price = price;
-
-	}
-
-	public void details() {
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
-
-		System.out.println();
+	@Override
+	public String toString() {
 		System.out.println("                             ** Details **                            ");
-		System.out.println();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  ## Title : " + title);
-		System.out.println("  ## Type : " + type);
-		System.out.println("  ## volumes : " + volumes);
-		System.out.println("  ## Status : " + status);
-		System.out.println("  ## Pubished Date : " + published);
-		System.out.println("  ## Source : " + source);
-		System.out.println("  ## Genre : " + genre);
-		System.out.println("  ## Demographic : " + demographic);
-		System.out.println("  ## Description : " + description);
+		System.out.println("  ## Title : " + getTitle());
+		System.out.println("  ## volumes : " + getVolumes());
+		System.out.println("  ## Status : " + getStatus());
+		System.out.println("  ## Pubished Date : " + getDate());
+		System.out.println("  ## Source : " + getAuthor());
+		System.out.println("  ## Genre : " + getGenre());
+		System.out.println("  ## Description : " + getDescription());
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + title + " Manga.");
-		System.out.println("  >> The price is " + price + "  ₹ /-");
+		System.out.println("  >> The price is " + getPrice() + "  ₹ /-");
 		System.out.println("  >> Press 0 to exit.");
 		System.out.println("  >> Press 1 to place order.");
-		System.out.println("  >> Press 99 to go back.");
-		System.out.println();
+		System.out.println("  >> Press 99 to go Main menu.");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
-
-		if (choice == 1) {
-			PaymentSystem.bill = PaymentSystem.bill + price;
-		} else if (choice == 99) {
-			josei(null);
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.menu();
-		}
-
-		System.out.println("  >> Do you want to choose another Manga?");
-		System.out.print("  >> If yes then press Y and for No press N : ");
-		char ch = input.next().charAt(0);
-		if (ch == 'y' || ch == 'Y') {
-			homepage.joseiManga();
-		} else if (ch == 'n' || ch == 'N') {
-			paymentSystem.totalBill();
-		} else {
-			System.out.println("  >> You have selected wrong option.");
-			homepage.joseiManga();
-		}
-
+		return "";
 	}
 
-	public void josei(JoseiManga josei) {
+}
 
-		Scanner input = new Scanner(System.in);
-		HomePage homepage = new HomePage();
-		BillingSystem paymentSystem = new PaymentSystem();
+class Josei extends Manga {
 
-		System.out.println("                       ** " + josei.title + " **                        ");
-		System.out.println();
+	public Josei(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, double price) {
+		super(Id, title, volumes, description, status, date, author, genre, price);
+	}
+
+	public void josei(ArrayList<Manga> mangaList, Object obj, Scanner scr) {
+
+		Josei josei = (Josei) obj;
+
+		System.out.println("                       ** Order Process **                        ");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + josei.title);
-		System.out.println("  >> Volumes : " + josei.volumes);
-		System.out.println("  >> Pirce : " + josei.price + " ₹ /-");
-		System.out.println("  >> Description : " + josei.description);
+		System.out.println("  >> You have selected " + josei.getTitle());
+		System.out.println("  >> Volumes : " + josei.getVolumes());
+		System.out.println("  >> Pirce : " + josei.getPrice() + " ₹ /-");
 		System.out.println("  >> Press 1 for more details.");
-		System.out.println("  >> Press 2 to buy.");
+		System.out.println("  >> Press 2 for purchase.");
 		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 99 for previous menu.");
-		System.out.println();
+		System.out.println("  >> Press 99 for main menu.");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter your choice : ");
-		int choice = input.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		if (1 == choice) {
-			System.out.println("                       ** " + josei.title + " **                        ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			josei.details();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
-		} else if (2 == choice) {
-			System.out.println();
-			System.out.println("                        ** Billing Process **                         ");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("  >> You have selected " + josei.title + " Manga.");
-			System.out.println("  >> The price is " + josei.price + "  ₹ /-");
-			System.out.println("  >> Press 0 to exit.");
-			System.out.println("  >> Press 1 to place order.");
-			System.out.println("  >> Press 99 to go back.");
-			System.out.println();
-			System.out.println("| ** ============================================================ ** |");
+		try {
+
 			System.out.print("  >> Enter your choice : ");
-			choice = input.nextInt();
+			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
 
-			if (choice == 1) {
-				PaymentSystem.bill = PaymentSystem.bill + josei.price;
-			} else if (choice == 99) {
-				homepage.joseiManga();
+			if (1 == choice) {
+				System.out.println(josei);
+				mangaBill(josei, scr);
+			} else if (2 == choice) {
+				System.out.println("                        ** Billing Process **                         ");
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("  >> You have selected " + josei.getTitle() + " Manga.");
+				System.out.println("  >> The price is " + josei.getPrice() + "  ₹ /-");
+				System.out.println("  >> Press 0 to exit.");
+				System.out.println("  >> Press 1 to place order.");
+				System.out.println("  >> Press 99 to go back.");
+				System.out.println();
+				System.out.println("| ** ============================================================ ** |");
+				mangaBill(josei, scr);
+			} else if (0 == choice) {
+				MangaShop.exit();
+			} else if (99 == choice) {
+				homepage.kodomomuke(scr);
 			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.menu();
+				throw new InvalidInputException("Please enter the correct input.");
 			}
-
-			System.out.println("  >> Do you want to choose another Manga?");
-			System.out.print("  >> If yes then press Y and for No press N : ");
-			char ch = input.next().charAt(0);
-			if (ch == 'y' || ch == 'Y') {
-				homepage.joseiManga();
-			} else if (ch == 'n' || ch == 'N') {
-				paymentSystem.totalBill();
-			} else {
-				System.out.println("  >> You have selected wrong option.");
-				homepage.joseiManga();
-			}
-
-		} else if (0 == choice) {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-		} else if (99 == choice) {
-			homepage.joseiManga();
-		} else {
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| !!             Please enter the correct input.                  !! |");
-			System.out.println("| ** ============================================================ ** |");
-			josei(null);
+		} catch (InvalidInputException e) {
+			System.out.println("  !! Error : " + e);
+			josei(mangaList, josei, scr);
 		}
+	}
+
+	@Override
+	public String toString() {
+		System.out.println("                             ** Details **                            ");
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  ## Title : " + getTitle());
+		System.out.println("  ## volumes : " + getVolumes());
+		System.out.println("  ## Status : " + getStatus());
+		System.out.println("  ## Pubished Date : " + getDate());
+		System.out.println("  ## Source : " + getAuthor());
+		System.out.println("  ## Genre : " + getGenre());
+		System.out.println("  ## Description : " + getDescription());
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  >> The price is " + getPrice() + "  ₹ /-");
+		System.out.println("  >> Press 0 to exit.");
+		System.out.println("  >> Press 1 to place order.");
+		System.out.println("  >> Press 99 to go Main menu.");
+		System.out.println("| ** ============================================================ ** |");
+		return "";
 	}
 }
 
+//============================================================//
+//============================================================//
+
+//============================================================//
+//============================================================//
+// Main stuff start here 
 public class MangaShop {
-
-	// SIB - Static Initializer Block
 	static {
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("| <<                     Welcome to AniShop                       >> |");
+		System.out.println("| <<                     Welcome to MangaShop                     >> |");
 		System.out.println("| ** ============================================================ ** |");
 	}
 
-	// registration method
-	public static void registration(Scanner scr) {
+	public static void main(String[] args) {
+
+		Scanner scr = new Scanner(System.in);
+		Authentication authProcess = new AuthProcess();
+		ArrayList<User> userCollection = new ArrayList<User>();
 
 		System.out.println("  **                    Registration Process                      **  ");
 		System.out.println("| ** ============================================================ ** |");
@@ -1719,38 +1437,34 @@ public class MangaShop {
 		System.out.print("  >> Enter your choice: ");
 		int choice = scr.nextInt();
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println();
 
-		WelcomePage registration = new Registration(); // UpCasting.
-
-		switch (choice) {
-		case 1:
-			registration.signup();
-			break;
-		case 2:
-			registration.login();
-			break;
-		case 0:
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println("| <<                       See you again.                         >> |");
-			System.out.println("| ** ============================================================ ** |");
-			System.exit(0);
-			break;
-		default:
-			System.out.println("                 !! Please enter the correct input. !!                ");
-			registration(new Scanner(System.in));
+		try {
+			switch (choice) {
+			case 1:
+				authProcess.signup(userCollection, scr);
+				;
+				break;
+			case 2:
+				authProcess.login(userCollection, scr);
+				break;
+			case 0:
+				exit();
+				break;
+			default:
+				System.out.println("!! Please enter the correct input. !!");
+				main(null);
+			}
+		} catch (InvalidCredintialException e) {
+			System.out.println("Exception Occured" + e);
 		}
 
+		scr.close();
 	}
 
-	public static void main(String[] args) {
-		Scanner scr = new Scanner(System.in);
-
-		registration(scr);
-
-		HomePage home = new HomePage();
-		home.menu();
-
+	public static void exit() {
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("| <<                       See you again.                         >> |");
+		System.out.println("| ** ============================================================ ** |");
+		System.exit(0);
 	}
-
 }
