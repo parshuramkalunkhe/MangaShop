@@ -51,11 +51,7 @@ interface Authentication {
 }
 
 class AuthProcess implements Authentication {
-	List<User> userCollection;
-
-	public AuthProcess() {
-		this.userCollection = new ArrayList<User>();
-	}
+	static List<User> userCollection = new ArrayList<User>();
 
 	public void login(Scanner scr) throws InvalidCredintialException {
 		System.out.println("| ** ============================================================ ** |");
@@ -232,7 +228,7 @@ class PaymentSystem implements BillingSystem {
 
 	HomePage homepage = new HomePage();
 	ArrayList<User> userCollection = new ArrayList<User>();
-	LinkedList<Manga> mangaCollection = new LinkedList<Manga>();
+	static LinkedList<Manga> mangaCollection = new LinkedList<Manga>();
 	User user;
 
 	public void yourOrders(Scanner scr) {
@@ -414,8 +410,8 @@ class PaymentFailedException extends Exception {
 
 class HomePage {
 
-	List<Manga> mangaList = new ArrayList<Manga>();
-	Map<Integer, Manga> mangaCollection = new HashMap<Integer, Manga>();
+	static List<Manga> mangaList = new ArrayList<Manga>();
+	static Map<Integer, Manga> mangaCollection = new HashMap<Integer, Manga>();
 
 	Scanner scr = new Scanner(System.in);
 
@@ -641,7 +637,7 @@ class HomePage {
 			switch (choice) {
 			case 1:
 				for (Map.Entry<Integer, Manga> entry : mangSet) {
-					int id = entry.getKey();
+//					int id = entry.getKey();
 					Manga mangaObj = entry.getValue();
 					if (mangaObj.getType().equals("kodomomuke")) {
 						System.out.println("  " + mangaObj.getId() + ". " + mangaObj.getTitle());
@@ -681,7 +677,7 @@ class HomePage {
 
 			case 2:
 				for (Map.Entry<Integer, Manga> entry : mangSet) {
-					int id = entry.getKey();
+//					int id = entry.getKey();
 					Manga mangaObj = entry.getValue();
 					if (mangaObj.getType().equals("shonen")) {
 						System.out.println("  " + mangaObj.getId() + ". " + mangaObj.getTitle());
@@ -721,7 +717,7 @@ class HomePage {
 
 			case 3:
 				for (Map.Entry<Integer, Manga> entry : mangSet) {
-					int id = entry.getKey();
+//					int id = entry.getKey();
 					Manga mangaObj = entry.getValue();
 					if (mangaObj.getType().equals("shojo")) {
 						System.out.println("  " + mangaObj.getId() + ". " + mangaObj.getTitle());
@@ -762,7 +758,7 @@ class HomePage {
 
 			case 4:
 				for (Map.Entry<Integer, Manga> entry : mangSet) {
-					int id = entry.getKey();
+//					int id = entry.getKey();
 					Manga mangaObj = entry.getValue();
 					if (mangaObj.getType().equals("seinen")) {
 						System.out.println("  " + mangaObj.getId() + ". " + mangaObj.getTitle());
@@ -1030,13 +1026,12 @@ class MangaObject extends Manga {
 				System.out.println("| ** ============================================================ ** |");
 				mangaBill(manga, scr);
 			} else if (3 == choice) {
-				MangaObject newManga = new MangaObject(
-                manga.getId(), manga.getTitle(), manga.getVolumes(), manga.getDescription(), manga.getStatus(),
-                manga.getDate(), manga.getAuthor(), manga.getGenre(), manga.getType(), manga.getPrice()
-        );
-        mangaList.add(newManga);
-        System.out.println("  >> Added to cart: " + newManga.getTitle());
-        cart();
+				MangaObject newManga = new MangaObject(manga.getId(), manga.getTitle(), manga.getVolumes(),
+						manga.getDescription(), manga.getStatus(), manga.getDate(), manga.getAuthor(), manga.getGenre(),
+						manga.getType(), manga.getPrice());
+				mangaList.add(newManga);
+				System.out.println("  >> Added to cart: " + newManga.getTitle());
+				mangaObject(manga);
 			} else if (0 == choice) {
 				MangaShop.exit();
 			} else if (9 == choice) {
@@ -1081,18 +1076,19 @@ class MangaObject extends Manga {
 	}
 
 	public void checkout() {
-    // Perform checkout logic here
+		// Perform checkout logic here
 		if (mangaList.isEmpty()) {
 			System.out.println("  !! Your cart is empty. Cannot proceed to checkout.");
 		} else {
-			// Calculate the total price and perform any necessary payment-related 	actions
+			// Calculate the total price and perform any necessary payment-related actions
 			double totalPrice = 0;
 			for (Manga manga : mangaList) {
 				totalPrice += manga.getPrice();
 			}
 
 			System.out.println("  >> Total price for your items: " + totalPrice + " ₹ /- ");
-			// Perform any further actions related to finalizing the purchase 			(e.g., payment gateway integration)
+			// Perform any further actions related to finalizing the purchase (e.g., payment
+			// gateway integration)
 
 			// After successful checkout, clear the cart
 			mangaList.clear();
@@ -1121,7 +1117,6 @@ class MangaObject extends Manga {
 		return "";
 	}
 }
-
 
 //============================================================//
 //============================================================//
