@@ -1,18 +1,20 @@
-package mangashop;
-
-import java.util.Scanner;
-import java.util.Set;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.LinkedList;
+import java.util.Scanner;
+
+// Collections
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+
+// Exception
+import java.util.InputMismatchException;
 
 //============================================================//
 //============================================================//
-// this all is user creation and login and signup related stuff.
+//this all is user creation and login and signup related stuff.
 class User {
 	private String name;
 	private long contact;
@@ -51,29 +53,32 @@ interface Authentication {
 }
 
 class AuthProcess implements Authentication {
-	static List<User> userCollection = new ArrayList<User>();
+	private static List<User> userCollection = new ArrayList<User>();
+	private static Map<Long, String> userCredentials = new HashMap<Long, String>();
 
 	public void login(Scanner scr) throws InvalidCredintialException {
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println("| <<                       Login Process                          >> |");
 		System.out.println("| ** ============================================================ ** |");
 
-		long contact = userContact(scr);
-
-		System.out.print("  >> Enter password : ");
-		String password = scr.next();
-
 		try {
-			for (User user : userCollection) {
-				if (user.getContact() == contact && user.getPassword().equals(password)) {
+			long contact = userContact(scr);
+			String password;
+
+			if (userCredentials.containsKey(contact)) {
+				System.out.print("  >> Enter password : ");
+				password = scr.next();
+
+				if (userCredentials.get(contact).equals(password)) {
 					System.out.println("| ** ============================================================ ** |");
 					System.out.println("| <<                    Logged In Successfully                    >> |");
 					System.out.println("| ** ============================================================ ** |");
-					HomePage menu = new HomePage();
-					menu.menu();
+					HomePage.menu();
 				} else {
 					throw new InvalidCredintialException("Invalid Credintial.");
 				}
+			} else {
+				throw new InvalidCredintialException("User already exists.");
 			}
 		} catch (InvalidCredintialException e) {
 			System.out.println("  !! " + e);
@@ -81,7 +86,6 @@ class AuthProcess implements Authentication {
 			System.out.println("  !! User is not exits");
 		}
 
-		login(scr);
 	}
 
 	public void signup(Scanner scr) throws InvalidCredintialException {
@@ -95,17 +99,28 @@ class AuthProcess implements Authentication {
 
 		String email = userEmail(scr);
 
-		String password = userPassword(scr);
+		String password;
 
-		User user = new User(name, contact, email, password);
+		try {
+			if (userCredentials.containsKey(contact)) {
+				throw new InvalidCredintialException("User already exists. Please choose a different one.");
+			} else {
+				password = userPassword(scr);
 
-		userCollection.add(user);
+				userCredentials.put(contact, password);
+				User user = new User(name, contact, email, password);
+				userCollection.add(user);
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("| <<                       Signup Successfully                    >> |");
+				System.out.println("| ** ============================================================ ** |");
 
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("| <<                       Signup Successfully                    >> |");
-		System.out.println("| ** ============================================================ ** |");
-
-		login(scr);
+			}
+		} catch (InvalidCredintialException e) {
+			System.out.println("  !! " + e);
+		} catch (Exception e) {
+			System.out.println("  !! " + e);
+		}
+		HomePage.menu();
 	}
 
 	private String userName(Scanner scr) {
@@ -152,6 +167,12 @@ class AuthProcess implements Authentication {
 
 		if (email.isBlank()) {
 			userEmail(scr);
+		}
+		for (User user : userCollection) {
+			if (user.getEmail().equals(email)) {
+				System.out.println("  !! email already exists.");
+				userEmail(scr);
+			}
 		}
 
 		boolean isSymbol = false, isDOT = false;
@@ -208,14 +229,76 @@ class AuthProcess implements Authentication {
 		return password;
 	}
 
+	public void allUsersMap() {
+		for (Long key : userCredentials.keySet()) {
+			System.out.println("  -+| Contact : " + key + ", Password : " + userCredentials.get(key) + " |+- ");
+		}
+	}
+
+	public void allUserCollection() {
+		for (User user : userCollection) {
+			System.out.println("  -+| " + user.getName() + " : " + user.getContact() + " : " + user.getEmail() + " : "
+					+ user.getPassword() + " |+- ");
+		}
+	}
+
 }
-// User related stuff ended here.
+//User related stuff ended here.
+//============================================================//
+//============================================================//
+
+// Custom exception for handling invalid credentials.
+//============================================================//
+//============================================================//
+
+@SuppressWarnings("serial")
+class InvalidCredintialException extends Exception {
+	/**
+	 * Constructs an InvalidCredentialException with the specified error message.
+	 *
+	 * @param errorMessage The descriptive error message.
+	 */
+	public InvalidCredintialException(String errorMessage) {
+		super(errorMessage);
+	}
+}
+
+/**
+ * Custom exception for handling invalid input.
+ */
+@SuppressWarnings("serial")
+class InvalidInputException extends InputMismatchException {
+	/**
+	 * Constructs an InvalidInputException with the specified error message.
+	 *
+	 * @param errorMessage The descriptive error message.
+	 */
+	public InvalidInputException(String errorMessage) {
+		super(errorMessage);
+	}
+}
+
+/**
+ * Custom exception for handling payment failures.
+ */
+@SuppressWarnings("serial")
+class PaymentFailedException extends Exception {
+	/**
+	 * Constructs a PaymentFailedException with the specified error message.
+	 *
+	 * @param errorMessage The descriptive error message.
+	 */
+	public PaymentFailedException(String errorMessage) {
+		super(errorMessage);
+	}
+}
+// Custom Exceptions end here.
 //============================================================//
 //============================================================//
 
 //============================================================//
 //============================================================//
-// Billing System
+//Billing System
 interface BillingSystem {
 	void totalBill(Object obj, Scanner scr);
 
@@ -226,47 +309,15 @@ interface BillingSystem {
 
 class PaymentSystem implements BillingSystem {
 
-	HomePage homepage = new HomePage();
-	ArrayList<User> userCollection = new ArrayList<User>();
-	static LinkedList<Manga> mangaCollection = new LinkedList<Manga>();
+	static private LinkedList<MangaObject> mangaCollection = new LinkedList<MangaObject>();
+//	static private Map<Integer, String> yourOrders = new HashMap<Integer, String>();
 	User user;
-
-	public void yourOrders(Scanner scr) {
-		System.out.println("  !! ## ** << Your Orders >> ** ## !! ");
-		for (Object obj : mangaCollection) {
-			Manga manga = (Manga) obj;
-			System.out.println("  " + manga.getId() + ". " + manga.getTitle());
-		}
-		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 9 for main Menu.");
-		System.out.println("| ** ============================================================ ** |");
-		try {
-			System.out.print("  >> Enter your choice: ");
-			int choice = scr.nextInt();
-			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
-
-			switch (choice) {
-
-			case 0:
-				MangaShop.exit();
-				break;
-
-			case 9:
-				homepage.menu();
-			default:
-
-			}
-		} catch (Exception e) {
-			yourOrders(scr);
-		}
-	}
 
 	static double bill;
 
 	@Override
 	public void totalBill(Object obj, Scanner scr) {
-		Manga manga = (Manga) obj;
+		MangaObject manga = (MangaObject) obj;
 		String paymentId;
 		// ** TypeCasting : Narrowing ( double >> int ).
 		int discount = (int) (bill * 0.1);
@@ -328,13 +379,13 @@ class PaymentSystem implements BillingSystem {
 
 			System.out.println("  >> Thank you for paying : " + amount + "  ₹ /-");
 			System.out.println("| ** ============================================================ ** |");
-			mangaCollection.add((Manga) obj);
+			mangaCollection.add((MangaObject) obj);
 			System.out.println("  >> Would you like to continue purchasing more mangas.");
 			System.out.print("  >> Press Y or y for yes and N or n for No : ");
 
 			char ch = scr.next().charAt(0);
 			if (ch == 'y' || ch == 'Y') {
-				homepage.menu();
+				HomePage.menu();
 			} else if (ch == 'n' || ch == 'N') {
 				System.exit(0);
 			} else {
@@ -356,13 +407,13 @@ class PaymentSystem implements BillingSystem {
 
 		System.out.println("  >> Thank you for paying : " + cash);
 		System.out.println("| ** ============================================================ ** |");
-		mangaCollection.add((Manga) obj);
+		mangaCollection.add((MangaObject) obj);
 		System.out.println("  >> Would you like to continue purchasing more manga, manhwa, and merchandise.");
 		System.out.print("  >> Press Y or y for yes and N or n for No : ");
 		try {
 			char ch = scr.next().charAt(0);
 			if (ch == 'y' || ch == 'Y') {
-				homepage.menu();
+				HomePage.menu();
 			} else if (ch == 'n' || ch == 'N') {
 				MangaShop.exit();
 			} else {
@@ -373,102 +424,323 @@ class PaymentSystem implements BillingSystem {
 			payment(obj, cash, scr);
 		}
 	}
-}
 
-//============================================================//
-//============================================================//
-
-//============================================================//
-//============================================================//
-// Custom Exception Handling mechanism.
-@SuppressWarnings("serial")
-class InvalidCredintialException extends Exception {
-	public InvalidCredintialException(String errorMessage) {
-		super(errorMessage);
-	}
-}
-
-@SuppressWarnings("serial")
-class InvalidInputException extends InputMismatchException {
-	public InvalidInputException(String errorMessage) {
-		super(errorMessage);
-	}
-}
-
-@SuppressWarnings("serial")
-class PaymentFailedException extends Exception {
-	public PaymentFailedException(String errorMessage) {
-		super(errorMessage);
-	}
-}
-//============================================================//
-//============================================================//
-
-//============================================================//
-//============================================================//
-// HomePage
-
-class HomePage {
-
-	static List<Manga> mangaList = new ArrayList<Manga>();
-	static Map<Integer, Manga> mangaCollection = new HashMap<Integer, Manga>();
-
-	Scanner scr = new Scanner(System.in);
-
-	public void menu() {
-
+	public static void yourOrders(Scanner scr) {
+		System.out.println("  !! ## ** << Your Orders >> ** ## !! ");
+		if (mangaCollection.isEmpty()) {
+			System.out.println("| ** ============================================================ ** |");
+			System.out.println("  << No Orders Placed Yet. >>");
+			System.out.println("| ** ============================================================ ** |");
+			HomePage.menu();
+		}
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("                       ** Welcome to MangaShop **                         ");
+		System.out.println("  << Your Orders. >>");
 		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> Press 1 for buy manga.");
-		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 99 for login/signup.");
-		System.out.println("| ** ============================================================ ** |");
+
+		for (MangaObject manga : mangaCollection) {
+			System.out.println("  -+| " + manga.getId() + " : " + manga.getTitle() + " |+- ");
+		}
+
+		System.out.println("  >> Would you like to continue purchasing more manga, manhwa, and merchandise.");
+		System.out.print("  >> Press Y or y for yes and N or n for No : ");
 		try {
-			System.out.print("  >> Enter your choice: ");
+			char ch = scr.next().charAt(0);
+			if (ch == 'y' || ch == 'Y') {
+				HomePage.menu();
+			} else if (ch == 'n' || ch == 'N') {
+				MangaShop.exit();
+			} else {
+				throw new PaymentFailedException("  >> You have selected wrong option.");
+			}
+		} catch (Exception e) {
+			System.out.println("Error : " + e);
+			yourOrders(new Scanner(System.in));
+		}
+
+	}
+}
+
+//============================================================//
+//============================================================//
+
+// All MangaShop here
+//============================================================//
+//============================================================//
+
+abstract class Manga {
+	// Manga information
+	private int Id;
+	private String title;
+	private int volumes;
+	private String description;
+	private String status;
+	private Date date;
+	private String author;
+	private String genre;
+	private String type;
+	private double price;
+
+	public Manga(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, String type, double price) {
+		this.Id = Id;
+		this.title = title;
+		this.volumes = volumes;
+		this.description = description;
+		this.status = status;
+		this.date = date;
+		this.author = author;
+		this.genre = genre;
+		this.type = type;
+		this.price = price;
+	}
+
+	public Manga() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public int getId() {
+		return Id;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public int getVolumes() {
+		return volumes;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public double getPrice() {
+		return price;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public String getGenre() {
+		return genre;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	abstract void mangaBill(Object obj, Scanner scr);
+}
+
+class MangaObject extends Manga {
+
+	private static List<MangaObject> mangaList = new LinkedList<MangaObject>();
+
+	public MangaObject(int Id, String title, int volumes, String description, String status, Date date, String author,
+			String genre, String type, double price) {
+		super(Id, title, volumes, description, status, date, author, genre, type, price);
+	}
+
+	public MangaObject() {
+	}
+
+	public void mangaBill(Object obj, Scanner scr) {
+		MangaObject manga = (MangaObject) obj;
+		PaymentSystem paymentSystem = new PaymentSystem();
+		try {
+			System.out.print("  >> Enter your choice : ");
 			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
-			System.out.println();
 
-			switch (choice) {
+			if (choice == 1) {
+				PaymentSystem.bill = PaymentSystem.bill + manga.getPrice();
+				paymentSystem.totalBill(manga, scr);
+			} else if (choice == 99) {
+				HomePage.menu();
+			} else {
+				throw new InvalidInputException("  >> You have selected wrong option.");
+			}
 
-			case 1:
-				mangaShop();
-				break;
-			case 2:
-//				shonen(scr);
-				break;
-			case 3:
-//				shojo(scr);
-				break;
-			case 4:
-//				seinen(scr);
-				break;
-			case 5:
-//				josei(scr);
-				break;
-			case 0:
+			System.out.println("  >> Do you want to choose another Manga?");
+			System.out.print("  >> If yes then press Y and for No press N : ");
+
+			char ch = scr.next().charAt(0);
+
+			if (ch == 'y' || ch == 'Y') {
+				HomePage.menu();
+			} else if (ch == 'n' || ch == 'N') {
 				MangaShop.exit();
-				break;
-			case 99:
-				menu();
-				break;
-			default:
+			} else {
+				throw new InvalidInputException("  >> You have selected wrong option.");
+			}
+		} catch (InvalidInputException e) {
+			System.out.println("Error : " + e);
+			mangaBill(manga, scr);
+		} catch (Exception e) {
+			mangaBill(manga, scr);
+		}
+	}
+
+	@SuppressWarnings("resource")
+	public void mangaObject(Object obj) {
+		MangaObject manga = (MangaObject) obj;
+		Scanner scr = new Scanner(System.in);
+
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("                       ** Order Process **                        ");
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  >> You have selected " + manga.getTitle());
+		System.out.println("  >> Volumes : " + manga.getVolumes());
+		System.out.println("  >> Pirce : " + manga.getPrice() + " ₹ /-");
+		System.out.println("  >> Press 1 for purchase.");
+		System.out.println("  >> Press 2 for add into cart.");
+		System.out.println("  >> Press 0 for exit.");
+		System.out.println("  >> Press 9 for Your Cart.");
+		System.out.println("  >> Press 99 for main menu.");
+		System.out.println("| ** ============================================================ ** |");
+
+		try {
+
+			System.out.print("  >> Enter your choice : ");
+			int choice = scr.nextInt();
+			System.out.println("| ** ============================================================ ** |");
+
+			if (1 == choice) {
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("                        ** Billing Process **                         ");
+				System.out.println("| ** ============================================================ ** |");
+				System.out.println("  >> You have selected " + manga.getTitle() + " Manga.");
+				System.out.println("  >> The price is " + manga.getPrice() + "  ₹ /-");
+				System.out.println("  >> Press 0 to exit.");
+				System.out.println("  >> Press 1 to place order.");
+				System.out.println("  >> Press 99 to go back.");
+				System.out.println();
+				System.out.println("| ** ============================================================ ** |");
+				mangaBill(manga, scr);
+			} else if (2 == choice) {
+				if (mangaList.contains(manga)) {
+					System.out.println("  !! Manga is alreay added to your cart.");
+					mangaObject(manga);
+				}
+				mangaList.add(manga);
+				System.out.println("  >> Added to cart: " + manga.getTitle());
+				mangaObject(manga);
+			} else if (0 == choice) {
+				MangaShop.exit();
+			} else if (9 == choice) {
+				cart(scr);
+			} else if (99 == choice) {
+				HomePage.menu();
+			} else {
 				throw new InvalidInputException("Please enter the correct input.");
 			}
 		} catch (InvalidInputException e) {
 			System.out.println("  !! Error : " + e);
-			menu();
-		} catch (Exception e) {
-			System.out.println(e);
-			menu();
+			mangaObject(manga);
 		}
 	}
 
+	public static void cart(Scanner scr) {
+		System.out.println("  -- ++ << !! ## Your Cart ## !! >> ++ --");
+
+		if (mangaList.isEmpty()) {
+			System.out.println("  !! Your Cart is empty.");
+			
+		}
+		for (Manga manga : mangaList) {
+			System.out.println("  -+| " + manga.getId() + ". " + manga.getTitle() + " |+- ");
+		}
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("  >> Press 0 to exit.");
+		System.out.println("  >> Press 1 to place order.");
+		System.out.println("  >> Press 2 for clear cart.");
+		System.out.println("  >> Press 99 to go Main menu.");
+		try {
+			System.out.println("| ** ============================================================ ** |");
+			System.out.print("  >> Enter Your Choice : ");
+			int choice = scr.nextInt();
+			System.out.println("| ** ============================================================ ** |");
+			if (choice == 0) {
+				MangaShop.exit();
+			} else if (1 == choice) {
+				checkOut(scr); // Process the checkout
+			} else if (2 == choice) {
+				mangaList.clear();
+				System.out.println("  >> Cart cleared.");
+				HomePage.menu();
+			} else if (99 == choice) {
+				HomePage.menu();
+			}
+		} catch (Exception e) {
+			cart(new Scanner(System.in));
+		}
+	}
+
+	public static void checkOut(Scanner scr) {
+		// Perform checkout logic here
+		if (mangaList.isEmpty()) {
+			System.out.println("  !! Your cart is empty. Cannot proceed to checkout.");
+		} else {
+			// Calculate the total price and perform any necessary payment-related actions
+			double totalPrice = 0;
+			for (Manga manga : mangaList) {
+				totalPrice += manga.getPrice();
+			}
+
+			System.out.println("  >> Total price for your items: " + totalPrice + " ₹ /- ");
+			// Perform any further actions related to finalizing the purchase (e.g., payment
+			// gateway integration)
+
+			// After successful checkout, clear the cart
+			mangaList.clear();
+			System.out.println("  >> Thank you for your purchase!");
+			System.out.println("| ** ============================================================ ** |");
+			System.out.println("  >> Press 0 to exit.");
+			System.out.println("  >> Press 99 to go Main menu.");
+			try {
+				System.out.println("| ** ============================================================ ** |");
+				System.out.print("  >> Enter Your Choice : ");
+				int choice = scr.nextInt();
+				System.out.println("| ** ============================================================ ** |");
+				if (choice == 0) {
+					MangaShop.exit();
+				} else if (99 == choice) {
+					HomePage.menu();
+				}
+			} catch (Exception e) {
+				checkOut(new Scanner(System.in));
+			}
+		}
+	}
+}
+// Manga Endes here
+//============================================================//
+//============================================================//
+
+//============================================================//
+//============================================================//
+//HomePage
+
+class HomePage {
+
+	private static Map<Integer, Manga> mangaCollection = new HashMap<Integer, Manga>();
+
+	static Scanner scr = new Scanner(System.in);
+
 	@SuppressWarnings("deprecation")
-	public void mangaShop() {
-		System.out.println("| ** ================ ** Manga for childrens. ** ================ ** |");
-		System.out.println("                       ** choose your Manga **                        ");
+	public static void menu() {
+
+		System.out.println("| ** ============================================================ ** |");
+		System.out.println("                       ** Welcome to MangaShop **                         ");
 		System.out.println("| ** ============================================================ ** |");
 
 		// kodomomuke
@@ -625,7 +897,8 @@ class HomePage {
 		System.out.println("  >> Press 4 for Seinen (adult male).");
 		System.out.println("  >> Press 5 for Josei (adult female).");
 		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 99 for previous menu.");
+		System.out.println("  >> Press 9 for your Orders.");
+		System.out.println("  >> Press 99 for login menu.");
 		System.out.println("| ** ============================================================ ** |");
 
 		try {
@@ -633,7 +906,7 @@ class HomePage {
 			int choice = scr.nextInt();
 			System.out.println("| ** ============================================================ ** |");
 
-			MangaObject manga;
+			Manga manga = new MangaObject();
 			switch (choice) {
 			case 1:
 				for (Map.Entry<Integer, Manga> entry : mangSet) {
@@ -650,24 +923,19 @@ class HomePage {
 
 				switch (choice) {
 				case 1:
-					manga = (MangaObject) doraemon;
-					manga.mangaObject(doraemon);
+					((MangaObject) manga).mangaObject(doraemon);
 					break;
 				case 2:
-					manga = (MangaObject) pokémonAdventures;
-					manga.mangaObject(pokémonAdventures);
+					((MangaObject) manga).mangaObject(pokémonAdventures);
 					break;
 				case 3:
-					manga = (MangaObject) megamanGigamix;
-					manga.mangaObject(megamanGigamix);
+					((MangaObject) manga).mangaObject(megamanGigamix);
 					break;
 				case 4:
-					manga = (MangaObject) astroBoy;
-					manga.mangaObject(astroBoy);
+					((MangaObject) manga).mangaObject(astroBoy);
 					break;
 				case 5:
-					manga = (MangaObject) metalFightBeyblade;
-					manga.mangaObject(metalFightBeyblade);
+					((MangaObject) manga).mangaObject(metalFightBeyblade);
 					break;
 
 				default:
@@ -690,24 +958,19 @@ class HomePage {
 
 				switch (choice) {
 				case 1:
-					manga = (MangaObject) naruto;
-					manga.mangaObject(naruto);
+					((MangaObject) manga).mangaObject(naruto);
 					break;
 				case 2:
-					manga = (MangaObject) bleach;
-					manga.mangaObject(bleach);
+					((MangaObject) manga).mangaObject(bleach);
 					break;
 				case 3:
-					manga = (MangaObject) onepiece;
-					manga.mangaObject(onepiece);
+					((MangaObject) manga).mangaObject(onepiece);
 					break;
 				case 4:
-					manga = (MangaObject) chainsawMan;
-					manga.mangaObject(chainsawMan);
+					((MangaObject) manga).mangaObject(chainsawMan);
 					break;
 				case 5:
-					manga = (MangaObject) demonSlayer;
-					manga.mangaObject(demonSlayer);
+					((MangaObject) manga).mangaObject(demonSlayer);
 					break;
 
 				default:
@@ -731,24 +994,19 @@ class HomePage {
 
 				switch (choice) {
 				case 1:
-					manga = (MangaObject) aoHaruRide;
-					manga.mangaObject(aoHaruRide);
+					((MangaObject) manga).mangaObject(aoHaruRide);
 					break;
 				case 2:
-					manga = (MangaObject) lastGame;
-					manga.mangaObject(lastGame);
+					((MangaObject) manga).mangaObject(lastGame);
 					break;
 				case 3:
-					manga = (MangaObject) orange;
-					manga.mangaObject(orange);
+					((MangaObject) manga).mangaObject(orange);
 					break;
 				case 4:
-					manga = (MangaObject) tommie;
-					manga.mangaObject(tommie);
+					((MangaObject) manga).mangaObject(tommie);
 					break;
 				case 5:
-					manga = (MangaObject) highSchoolDebut;
-					manga.mangaObject(highSchoolDebut);
+					((MangaObject) manga).mangaObject(highSchoolDebut);
 					break;
 
 				default:
@@ -772,24 +1030,19 @@ class HomePage {
 
 				switch (choice) {
 				case 1:
-					manga = (MangaObject) berserk;
-					manga.mangaObject(berserk);
+					((MangaObject) manga).mangaObject(berserk);
 					break;
 				case 2:
-					manga = (MangaObject) monster;
-					manga.mangaObject(monster);
+					((MangaObject) manga).mangaObject(monster);
 					break;
 				case 3:
-					manga = (MangaObject) onePunchMan;
-					manga.mangaObject(onePunchMan);
+					((MangaObject) manga).mangaObject(onePunchMan);
 					break;
 				case 4:
-					manga = (MangaObject) vinlandSaga;
-					manga.mangaObject(vinlandSaga);
+					((MangaObject) manga).mangaObject(vinlandSaga);
 					break;
 				case 5:
-					manga = (MangaObject) vagabond;
-					manga.mangaObject(vagabond);
+					((MangaObject) manga).mangaObject(vagabond);
 					break;
 
 				default:
@@ -813,24 +1066,19 @@ class HomePage {
 
 				switch (choice) {
 				case 1:
-					manga = (MangaObject) usagiDrop;
-					manga.mangaObject(usagiDrop);
+					((MangaObject) manga).mangaObject(usagiDrop);
 					break;
 				case 2:
-					manga = (MangaObject) chihayafuru;
-					manga.mangaObject(chihayafuru);
+					((MangaObject) manga).mangaObject(chihayafuru);
 					break;
 				case 3:
-					manga = (MangaObject) kuragehime;
-					manga.mangaObject(kuragehime);
+					((MangaObject) manga).mangaObject(kuragehime);
 					break;
 				case 4:
-					manga = (MangaObject) karneval;
-					manga.mangaObject(karneval);
+					((MangaObject) manga).mangaObject(karneval);
 					break;
 				case 5:
-					manga = (MangaObject) _07Ghost;
-					manga.mangaObject(_07Ghost);
+					((MangaObject) manga).mangaObject(_07Ghost);
 					break;
 
 				default:
@@ -842,6 +1090,8 @@ class HomePage {
 			case 0:
 				MangaShop.exit();
 				break;
+			case 9:
+				PaymentSystem.yourOrders(scr);
 			case 99:
 				menu();
 				break;
@@ -852,328 +1102,75 @@ class HomePage {
 
 		} catch (Exception e) {
 			System.out.println(e);
-			mangaShop();
+			menu();
 		}
 	}
 }
+// Home Page ends here
 //============================================================//
 //============================================================//
 
 //============================================================//
 //============================================================//
-// Manga 
-
-class Manga {
-	// Manga information
-	private int Id;
-	private String title;
-	private int volumes;
-	private String description;
-	private String status;
-	private Date date;
-	private String author;
-	private String genre;
-	private String type;
-	private double price;
-
-	public Manga(int Id, String title, int volumes, String description, String status, Date date, String author,
-			String genre, String type, double price) {
-		this.Id = Id;
-		this.title = title;
-		this.volumes = volumes;
-		this.description = description;
-		this.status = status;
-		this.date = date;
-		this.author = author;
-		this.genre = genre;
-		this.type = type;
-		this.price = price;
-	}
-
-	public Manga() {
-		// TODO Auto-generated constructor stub
-	}
-
-	public int getId() {
-		return Id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public int getVolumes() {
-		return volumes;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public Date getDate() {
-		return date;
-	}
-
-	public double getPrice() {
-		return price;
-	}
-
-	public String getAuthor() {
-		return author;
-	}
-
-	public String getGenre() {
-		return genre;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	HomePage homepage = new HomePage();
-	BillingSystem paymentSystem = new PaymentSystem();
-
-	public void mangaBill(Object obj, Scanner scr) {
-		Manga manga = (Manga) obj;
-
-		try {
-			System.out.print("  >> Enter your choice : ");
-			int choice = scr.nextInt();
-			System.out.println("| ** ============================================================ ** |");
-
-			if (choice == 1) {
-				PaymentSystem.bill = PaymentSystem.bill + manga.getPrice();
-				paymentSystem.totalBill(manga, scr);
-			} else if (choice == 99) {
-				homepage.mangaShop();
-			} else {
-				throw new InvalidInputException("  >> You have selected wrong option.");
-			}
-
-			System.out.println("  >> Do you want to choose another Manga?");
-			System.out.print("  >> If yes then press Y and for No press N : ");
-
-			char ch = scr.next().charAt(0);
-
-			if (ch == 'y' || ch == 'Y') {
-				homepage.mangaShop();
-			} else if (ch == 'n' || ch == 'N') {
-				MangaShop.exit();
-			} else {
-				throw new InvalidInputException("  >> You have selected wrong option.");
-			}
-		} catch (InvalidInputException e) {
-			System.out.println("Error : " + e);
-			mangaBill(manga, scr);
-		} catch (Exception e) {
-			mangaBill(manga, scr);
-		}
-	}
-}
-
-class MangaObject extends Manga {
-
-	private List<MangaObject> mangaList = new ArrayList<MangaObject>();
-//	private Cart cart = new Cart();
-	HomePage homepage = new HomePage();
-
-	public MangaObject(int Id, String title, int volumes, String description, String status, Date date, String author,
-			String genre, String type, double price) {
-		super(Id, title, volumes, description, status, date, author, genre, type, price);
-	}
-
-	Scanner scr = new Scanner(System.in);
-
-	public void mangaObject(Object obj) {
-		MangaObject manga = (MangaObject) obj;
-
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("                       ** Order Process **                        ");
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> You have selected " + manga.getTitle());
-		System.out.println("  >> Volumes : " + manga.getVolumes());
-		System.out.println("  >> Pirce : " + manga.getPrice() + " ₹ /-");
-		System.out.println("  >> Press 1 for more details.");
-		System.out.println("  >> Press 2 for purchase.");
-		System.out.println("  >> Press 3 for add into cart.");
-		System.out.println("  >> Press 0 for exit.");
-		System.out.println("  >> Press 9 for Your Cart.");
-		System.out.println("  >> Press 99 for main menu.");
-		System.out.println("| ** ============================================================ ** |");
-
-		try {
-
-			System.out.print("  >> Enter your choice : ");
-			int choice = scr.nextInt();
-			System.out.println("| ** ============================================================ ** |");
-
-			if (1 == choice) {
-				System.out.println(manga);
-				mangaBill(manga, scr);
-			} else if (2 == choice) {
-				System.out.println("                        ** Billing Process **                         ");
-				System.out.println("| ** ============================================================ ** |");
-				System.out.println("  >> You have selected " + manga.getTitle() + " Manga.");
-				System.out.println("  >> The price is " + manga.getPrice() + "  ₹ /-");
-				System.out.println("  >> Press 0 to exit.");
-				System.out.println("  >> Press 1 to place order.");
-				System.out.println("  >> Press 99 to go back.");
-				System.out.println();
-				System.out.println("| ** ============================================================ ** |");
-				mangaBill(manga, scr);
-			} else if (3 == choice) {
-				MangaObject newManga = new MangaObject(manga.getId(), manga.getTitle(), manga.getVolumes(),
-						manga.getDescription(), manga.getStatus(), manga.getDate(), manga.getAuthor(), manga.getGenre(),
-						manga.getType(), manga.getPrice());
-				mangaList.add(newManga);
-				System.out.println("  >> Added to cart: " + newManga.getTitle());
-				mangaObject(manga);
-			} else if (0 == choice) {
-				MangaShop.exit();
-			} else if (9 == choice) {
-				cart();
-			} else if (99 == choice) {
-				homepage.mangaShop();
-			} else {
-				throw new InvalidInputException("Please enter the correct input.");
-			}
-		} catch (InvalidInputException e) {
-			System.out.println("  !! Error : " + e);
-			mangaObject(manga);
-		}
-	}
-
-	public void cart() {
-		if (mangaList.isEmpty()) {
-			System.out.println("  !! Your Cart is empty.");
-		}
-		for (Manga manga : mangaList) {
-			System.out.println("  " + manga.getId() + ". " + manga.getTitle());
-		}
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> Press 0 to exit.");
-		System.out.println("  >> Press 1 to place order.");
-		System.out.println("  >> Press 2 for clear cart.");
-		System.out.println("  >> Press 99 to go Main menu.");
-		System.out.println("| ** ============================================================ ** |");
-		System.out.print("  >> Enter Your Choice : ");
-		int choice = scr.nextInt();
-		System.out.println("| ** ============================================================ ** |");
-		if (choice == 0) {
-			MangaShop.exit();
-		} else if (1 == choice) {
-			checkout(); // Process the checkout
-		} else if (2 == choice) {
-			mangaList.clear();
-			System.out.println("  >> Cart cleared.");
-		} else if (99 == choice) {
-			homepage.menu();
-		}
-	}
-
-	public void checkout() {
-		// Perform checkout logic here
-		if (mangaList.isEmpty()) {
-			System.out.println("  !! Your cart is empty. Cannot proceed to checkout.");
-		} else {
-			// Calculate the total price and perform any necessary payment-related actions
-			double totalPrice = 0;
-			for (Manga manga : mangaList) {
-				totalPrice += manga.getPrice();
-			}
-
-			System.out.println("  >> Total price for your items: " + totalPrice + " ₹ /- ");
-			// Perform any further actions related to finalizing the purchase (e.g., payment
-			// gateway integration)
-
-			// After successful checkout, clear the cart
-			mangaList.clear();
-			System.out.println("  >> Thank you for your purchase!");
-		}
-	}
-
-	@Override
-	public String toString() {
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("                             ** Details **                            ");
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  ## Title : " + getTitle());
-		System.out.println("  ## volumes : " + getVolumes());
-		System.out.println("  ## Status : " + getStatus());
-		System.out.println("  ## Pubished Date : " + getDate());
-		System.out.println("  ## Source : " + getAuthor());
-		System.out.println("  ## Genre : " + getGenre());
-		System.out.println("  ## Description : " + getDescription());
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> The price is " + getPrice() + "  ₹ /-");
-		System.out.println("  >> Press 0 to exit.");
-		System.out.println("  >> Press 1 to place order.");
-		System.out.println("  >> Press 99 to go Main menu.");
-		System.out.println("| ** ============================================================ ** |");
-		return "";
-	}
-}
-
-//============================================================//
-//============================================================//
-
-//============================================================//
-//============================================================//
-// Main stuff start here 
+// Main class
 public class MangaShop {
+
 	static {
 		System.out.println("| ** ============================================================ ** |");
 		System.out.println("| <<                     Welcome to MangaShop                     >> |");
 		System.out.println("| ** ============================================================ ** |");
 	}
 
-	public static void main(String[] args) {
-
-		Scanner scr = new Scanner(System.in);
-		Authentication authProcess = new AuthProcess();
-
-		System.out.println("  **                    Registration Process                      **  ");
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("  >> Press 1 for Signup.");
-		System.out.println("  >> Press 2 for Login.");
-		System.out.println("  >> Press 0 for Exit.");
-		System.out.println("| ** ============================================================ ** |");
-		try {
-			System.out.print("  >> Enter your choice: ");
-			int choice = scr.nextInt();
-			System.out.println("| ** ============================================================ ** |");
-
-			switch (choice) {
-			case 1:
-				authProcess.signup(scr);
-				;
-				break;
-			case 2:
-				authProcess.login(scr);
-				break;
-			case 0:
-				exit();
-				break;
-			default:
-				System.out.println("!! Please enter the correct input. !!");
-				main(null);
-			}
-		} catch (InvalidCredintialException e) {
-			System.out.println("Exception Occured" + e);
-			main(null);
-		}
-
-		scr.close();
-	}
-
 	public static void exit() {
-		System.out.println("| ** ============================================================ ** |");
-		System.out.println("| <<                       See you again.                         >> |");
-		System.out.println("| ** ============================================================ ** |");
 		System.exit(0);
 	}
+
+	public static void main(String[] args) throws InvalidCredintialException {
+		Scanner scr = new Scanner(System.in);
+		Authentication authProcess = new AuthProcess();
+		while (true) {
+			System.out.println("| ** ============================================================ ** |");
+			System.out.println("  **                    Registration Process                      **  ");
+			System.out.println("| ** ============================================================ ** |");
+			System.out.println("  >> Press 1 for Signup.");
+			System.out.println("  >> Press 2 for Login.");
+			System.out.println("  >> Press 0 for Exit.");
+			System.out.println("| ** ============================================================ ** |");
+			try {
+				System.out.print("  >> Enter your choice: ");
+				int choice = scr.nextInt();
+				System.out.println("| ** ============================================================ ** |");
+
+				switch (choice) {
+				case 1:
+					authProcess.signup(scr);
+					;
+					break;
+				case 2:
+					authProcess.login(scr);
+					break;
+				case 3:
+					System.out.println("  ** --++ All Users ++-- **");
+					((AuthProcess) authProcess).allUserCollection();
+					break;
+				case 4:
+					System.out.println("  ** All users ** ");
+					((AuthProcess) authProcess).allUsersMap();
+					break;
+				case 0:
+					System.exit(0);
+					break;
+				default:
+					System.out.println("!! Please enter the correct input. !!");
+					main(null);
+				}
+			} catch (InvalidCredintialException e) {
+				System.out.println("Exception Occured" + e);
+				main(null);
+			}
+
+		}
+	}
 }
+//============================================================//
+//============================================================//
