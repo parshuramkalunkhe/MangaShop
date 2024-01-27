@@ -84,6 +84,7 @@ class AuthProcess implements Authentication {
 			System.out.println("  !! " + e);
 		} catch (Exception e) {
 			System.out.println("  !! User is not exits");
+			MangaShop.main(null);
 		}
 
 	}
@@ -128,15 +129,15 @@ class AuthProcess implements Authentication {
 		String name = scr.next();
 
 		if (name.isBlank()) {
-			userName(scr);
+			userName(new Scanner(System.in));
 		}
 
 		if (!(name.length() >= 3)) {
 			System.out.println("  !! UserName must be three characters.");
-			userName(scr);
+			userName(new Scanner(System.in));
 		} else if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
 			System.out.println("  !! UserName must be start with a letter.");
-			userName(scr);
+			userName(new Scanner(System.in));
 		}
 
 		return name;
@@ -149,14 +150,14 @@ class AuthProcess implements Authentication {
 		try {
 			if (!(contact > 999999999L && contact < 100000000000L)) {
 				System.out.println("  !! Please enter 10 digits");
-				userContact(scr);
+				userContact(new Scanner(System.in));
 			}
 		} catch (InputMismatchException e) {
 			System.out.println("  !! Enter Number Only.");
-			userContact(scr);
+			userContact(new Scanner(System.in));
 		} catch (Exception e) {
 			System.out.println("  !! Unknown Error.");
-			userContact(scr);
+			userContact(new Scanner(System.in));
 		}
 		return contact;
 	}
@@ -166,12 +167,12 @@ class AuthProcess implements Authentication {
 		String email = scr.next();
 
 		if (email.isBlank()) {
-			userEmail(scr);
+			userEmail(new Scanner(System.in));
 		}
 		for (User user : userCollection) {
 			if (user.getEmail().equals(email)) {
 				System.out.println("  !! email already exists.");
-				userEmail(scr);
+				userEmail(new Scanner(System.in));
 			}
 		}
 
@@ -1125,7 +1126,7 @@ public class MangaShop {
 		System.exit(0);
 	}
 
-	public static void main(String[] args) throws InvalidCredintialException {
+	public static void main(String[] args) {
 		Scanner scr = new Scanner(System.in);
 		Authentication authProcess = new AuthProcess();
 		while (true) {
@@ -1165,7 +1166,7 @@ public class MangaShop {
 					main(null);
 				}
 			} catch (InvalidCredintialException e) {
-				System.out.println("Exception Occured" + e);
+				
 				main(null);
 			}
 
